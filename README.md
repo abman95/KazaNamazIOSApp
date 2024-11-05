@@ -1,0 +1,2 @@
+# KazaNamazIOSApp
+KazaNamazIOSApp
