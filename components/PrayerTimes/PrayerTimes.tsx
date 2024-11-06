@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Text,
         View,
         StyleSheet,
@@ -41,6 +41,9 @@ const usePrayerStatus = (): PrayerStatusResult => {
 };
 
 
+
+
+
 const usePrayerStyles = (selectedOption: string): PrayerStyles => {
     return React.useMemo(
         () => ({
@@ -55,6 +58,18 @@ const usePrayerStyles = (selectedOption: string): PrayerStyles => {
 export default function PrayerTimes({ prayersImage, prayersTime }: PrayerTimesProps): JSX.Element {
     const { selectedOption, showPicker } = usePrayerStatus();
     const dynamicStyles = usePrayerStyles(selectedOption);
+
+
+    useEffect(() => {
+        fetch(`https://api.aladhan.com/v1/timings/2024-11-05?latitude=53.075878&longitude=8.807311&method=3&timezonestring=Europe/Berlin`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.data.timings);
+                // Process the prayer times data here
+            })
+            .catch(error => console.error(error));
+    }, []);
+
 
     return (
         <View style={styles.container}>

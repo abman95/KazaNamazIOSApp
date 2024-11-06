@@ -9,8 +9,22 @@ export interface PrayerTimeIcons {
 }
 
 export interface PrayerTimesProps {
-    prayersImage: ImageSourcePropType;
+    prayersImage: ImageSourcePropType | string;
     prayersTime: string;
+}
+
+interface currentAndNextPrayersProperties {
+    currentPrayerImage: ImageSourcePropType | string;
+    nextPrayerImage: ImageSourcePropType | string;
+    currentPrayerTime: number;
+    nextPrayerTime: number;
+    nextPrayerName: string;
+    currentPrayerName: string;
+}
+
+export interface currentAndNextPrayersPropertiesProps {
+    currentAndNextPrayersProperties: currentAndNextPrayersProperties;
+    currentTime: number;
 }
 
 export interface PrayerStyles {
