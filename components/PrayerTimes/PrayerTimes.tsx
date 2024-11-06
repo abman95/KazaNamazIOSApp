@@ -1,105 +1,89 @@
-import React, {useEffect} from 'react';
-import {Text,
-        View,
-        StyleSheet,
-        ActionSheetIOS,
-        TouchableOpacity,
-        Image,
-        ViewStyle,
-        TextStyle,
-        ImageStyle,
+import React, { useEffect, useCallback, memo } from 'react';
+import {
+    Text,
+    View,
+    StyleSheet,
+    ActionSheetIOS,
+    TouchableOpacity,
+    Image,
+    type ImageSourcePropType,
+    type ViewStyle,
+    type TextStyle,
+    type ImageStyle,
 } from 'react-native';
-import { PrayerTimesProps, PrayerStyles, PrayerStatusResult } from '@/types/gebete';
 
+interface PrayerTimesProps {
+    prayersImage: ImageSourcePropType;
+    prayersTime: string;
+    setAllPrayerTriggerValue?: number;
+}
 
+const OPTIONS = ['Nicht verrichtet', 'verrichtet', 'Abbrechen'] as const;
+const INITIAL_OPTION = OPTIONS[0];
+const CANCEL_INDEX = 2;
 
+const PrayerTimes: React.FC<PrayerTimesProps> = ({
+                                                     prayersImage,
+                                                     prayersTime,
+                                                     setAllPrayerTriggerValue = 0
+                                                 }) => {
 
-// Verwendung des Interface als Return Type
-const usePrayerStatus = (): PrayerStatusResult => {
-    const options: string[] = ["Nicht verrichtet", "verrichtet", "Abbrechen"];
-    const [selectedOption, setSelectedOption] = React.useState<string>(options[0]);
+    const [selectedOption, setSelectedOption] = React.useState(INITIAL_OPTION);
 
-    const showPicker = React.useCallback((): void => {
+    const handlePress = useCallback(() => {
         ActionSheetIOS.showActionSheetWithOptions(
             {
-                options: options,
-                cancelButtonIndex: 2,
+                options: OPTIONS,
+                cancelButtonIndex: CANCEL_INDEX,
             },
-            (buttonIndex: number): void => {
-                if (buttonIndex !== 2) {
-                    setSelectedOption(options[buttonIndex]);
+            (buttonIndex: number) => {
+                if (buttonIndex !== CANCEL_INDEX) {
+                    setSelectedOption(OPTIONS[buttonIndex]);
                 }
             }
         );
     }, []);
 
-    return {
-        selectedOption,
-        showPicker,
-        options
-    };
-};
-
-
-
-
-
-const usePrayerStyles = (selectedOption: string): PrayerStyles => {
-    return React.useMemo(
-        () => ({
-            selectedOptionTextColor: {
-                color: selectedOption === "Nicht verrichtet" ? "red" : "green"
-            }
-        }), [selectedOption]
-    );
-};
-
-
-export default function PrayerTimes({ prayersImage, prayersTime }: PrayerTimesProps): JSX.Element {
-    const { selectedOption, showPicker } = usePrayerStatus();
-    const dynamicStyles = usePrayerStyles(selectedOption);
-
-
     useEffect(() => {
-        fetch(`https://api.aladhan.com/v1/timings/2024-11-05?latitude=53.075878&longitude=8.807311&method=3&timezonestring=Europe/Berlin`)
-            .then(response => response.json())
-            .then(data => {
-                console.log(data.data.timings);
-                // Process the prayer times data here
-            })
-            .catch(error => console.error(error));
-    }, []);
+        if (setAllPrayerTriggerValue !== undefined) {
+            setSelectedOption(OPTIONS[setAllPrayerTriggerValue]);
+        }
+    }, [setAllPrayerTriggerValue]);
 
 
     return (
         <View style={styles.container}>
-            <View>
-                <Image source={prayersImage} style={styles.prayersImage} />
-                <Text style={styles.prayersTimeText}>{prayersTime}:</Text>
-            </View>
-            <Text
-                style={[
-                    styles.selectedOptionText,
-                    dynamicStyles.selectedOptionTextColor
-                ]}
-            >
-                {selectedOption}
+            <Image
+                source={prayersImage}
+                style={styles.prayersImage}
+            />
+            <Text style={[
+                styles.selectedOptionText,
+                { color: 'white' }
+            ]}>
+                {prayersTime}: {selectedOption}
             </Text>
             <TouchableOpacity
                 style={styles.optionSelector}
-                onPress={showPicker}
+                onPress={handlePress}
+                activeOpacity={0.7}
             >
-                <Text style={styles.buttonText}>ändern</Text>
+                <Image
+                    style={styles.editImage}
+                    source={require('../../assets/images/edit1.png')}
+                />
             </TouchableOpacity>
         </View>
     );
-}
+};
 
-// Styles mit React Native Style Types
+export default memo(PrayerTimes);
+
+
 const styles = StyleSheet.create({
     container: {
-        padding: 20,
-        height: 90,
+        padding: 10,
+        height: 70,
         width: '100%',
         display: "flex",
         flexDirection: "row",
@@ -107,9 +91,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
     } as ViewStyle,
     prayersImage: {
-        width: 80,
-        height: 80,
-        borderRadius: 80,
+        width: 90,
+        height: 90,
+        borderRadius: 10,
     } as ImageStyle,
     prayersTimeText: {
         marginTop: 5,
@@ -119,23 +103,28 @@ const styles = StyleSheet.create({
         color: "white",
     } as TextStyle,
     selectedOptionText: {
-        flex: 2/4,
-        textAlign: "center",
-        fontSize: 15,
+        flex: 4/4,
+        textAlign: "left",
+        fontSize: 16,
+        fontWeight: "200",
+        marginLeft: 20,
     } as TextStyle,
     optionSelector: {
-        flex: 1.5/4,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: "white",
+        width: 50,
+        height: 50.5,
+        position: "absolute",
+        right: 10,
         alignItems: "center",
         justifyContent: "center",
-        height: 50,
-        width: 100,
-        fontSize: 15,
-        backgroundColor: "white",
-        borderRadius: 5,
+        borderStyle: "solid",
+        backgroundColor: "white"
     } as ViewStyle,
-    buttonText: {
-        alignItems: "center",
-        fontSize: 15,
-        color: "black",
-    } as TextStyle
+    editImage: {
+        width: 20,
+        height: 20,
+        tintColor: "black",
+    } as ImageStyle,
 });

@@ -1,5 +1,6 @@
-import React, {useEffect, useState} from 'react';
-import {Text,
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import {
+    Text,
     View,
     StyleSheet,
     ActionSheetIOS,
@@ -9,184 +10,190 @@ import {Text,
     TextStyle,
     ImageStyle,
 } from 'react-native';
-import {
-    PrayerStyles,
-    PrayerStatusResult,
-    currentAndNextPrayersPropertiesProps,
-} from '@/types/gebete';
 import { LinearGradient } from 'expo-linear-gradient';
 
+// Typen
+type PrayerStatus = 'Nicht verrichtet' | 'verrichtet';
+type PrayerOption = PrayerStatus | 'Abbrechen';
 
+interface PrayerTimes {
+    remainingPrayerTime: string;
+    currentPrayerTime: string;
+    nextPrayerTime: string;
+}
 
+interface PrayerProps {
+    currentAndNextPrayersProperties: {
+        currentPrayerName: string;
+        nextPrayerName: string;
+        currentPrayerTime: number;
+        nextPrayerTime: number;
+        currentPrayerImage: any;
+        nextPrayerImage: any;
+    };
+    currentTime: number;
+}
 
-// Verwendung des Interface als Return Type
-const usePrayerStatus = (): PrayerStatusResult => {
-    const options: string[] = ["Nicht verrichtet", "verrichtet", "Abbrechen"];
-    const [selectedOption, setSelectedOption] = React.useState<string>(options[0]);
+// Konstanten
+const PRAYER_OPTIONS: PrayerOption[] = ['Nicht verrichtet', 'verrichtet', 'Abbrechen'];
+const INITIAL_PRAYER_TIMES: PrayerTimes = {
+    remainingPrayerTime: '00:00:00',
+    currentPrayerTime: '00:00:00',
+    nextPrayerTime: '00:00:00',
+};
 
-    const showPicker = React.useCallback((): void => {
+// Helper Funktionen
+const formatTime = (hours: number, minutes: number): string => {
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+};
+
+const calculateTimeComponents = (seconds: number): { hours: number; minutes: number; secs: number } => {
+    const hours = Math.floor(seconds / 3600);
+    const remainingSeconds = seconds % 3600;
+    const minutes = Math.floor(remainingSeconds / 60);
+    const secs = remainingSeconds % 60;
+    return { hours, minutes, secs };
+};
+
+// Custom Hooks
+const usePrayerStatus = () => {
+    const [selectedOption, setSelectedOption] = useState<PrayerStatus>('Nicht verrichtet');
+
+    const showPicker = useCallback(() => {
         ActionSheetIOS.showActionSheetWithOptions(
             {
-                options: options,
+                options: PRAYER_OPTIONS,
                 cancelButtonIndex: 2,
             },
-            (buttonIndex: number): void => {
+            (buttonIndex: number) => {
                 if (buttonIndex !== 2) {
-                    setSelectedOption(options[buttonIndex]);
+                    setSelectedOption(PRAYER_OPTIONS[buttonIndex] as PrayerStatus);
                 }
             }
         );
     }, []);
 
-    return {
-        selectedOption,
-        showPicker,
-        options
-    };
+    return { selectedOption, showPicker };
 };
 
+const useTimeCalculation = (
+    currentTime: number,
+    currentAndNextPrayersProperties: PrayerProps['currentAndNextPrayersProperties']
+): PrayerTimes => {
+    return useMemo(() => {
+        const { currentPrayerName, currentPrayerTime, nextPrayerTime } = currentAndNextPrayersProperties;
+        let timeRemaining = 0;
 
-
-
-
-const usePrayerStyles = (selectedOption: string): PrayerStyles => {
-    return React.useMemo(
-        () => ({
-            selectedOptionTextColor: {
-                color: selectedOption === "Nicht verrichtet" ? "white" : "white"
+        if (currentPrayerName === 'Nachtgebet' && nextPrayerTime) {
+            timeRemaining = nextPrayerTime - currentTime;
+            if (timeRemaining < 0) {
+                timeRemaining += 24 * 3600;
             }
-        }), [selectedOption]
-    );
-};
+        } else if (nextPrayerTime) {
+            timeRemaining = nextPrayerTime - currentTime;
+        }
 
- type PrayerTimes = {
-     remainingPrayerTime: string,
-     currentPrayerTime: string,
-     nextPrayerTime: string,
-}
-
-
-export default function PrayerTimes({ currentAndNextPrayersProperties, currentTime }: currentAndNextPrayersPropertiesProps): JSX.Element {
-    const { selectedOption, showPicker } = usePrayerStatus();
-    const dynamicStyles = usePrayerStyles(selectedOption);
-    const [prayerTimes, setPrayerTimes] = useState<PrayerTimes>({
-        remainingPrayerTime: "00:00:00",
-        currentPrayerTime: "00:00:00",
-        nextPrayerTime: "00:00:00"
-    });
-
-    const formatTimeRemaining = (
-        timeRemaining: number,
-        currentPrayerTime: number,
-        nextPrayerTime: number
-    ): PrayerTimes => {
-        if (timeRemaining < 0) timeRemaining = 0;
-
-        // Berechnung der Stunden, Minuten und Sekunden für timeRemaining
-        const hours = Math.floor(timeRemaining / 3600);
-        const remainingSeconds = timeRemaining % 3600;
-        const minutes = Math.floor(remainingSeconds / 60);
-        const secs = remainingSeconds % 60;
-
-        // Formatierung mit führenden Nullen für timeRemaining
-        const formattedHours = hours.toString().padStart(2, '0');
-        const formattedMinutes = minutes.toString().padStart(2, '0');
-        const formattedSeconds = secs.toString().padStart(2, '0');
-
-        // Formatierung der currentPrayerTime
-        const currentHours = Math.floor(currentPrayerTime / 3600);
-        const currentMinutes = Math.floor((currentPrayerTime % 3600) / 60);
-        const formattedCurrentTime = `${currentHours.toString().padStart(2, '0')}:${currentMinutes.toString().padStart(2, '0')}`;
-
-        // Formatierung der nextPrayerTime
-        const nextHours = Math.floor(nextPrayerTime / 3600);
-        const nextMinutes = Math.floor((nextPrayerTime % 3600) / 60);
-        const formattedNextTime = `${nextHours.toString().padStart(2, '0')}:${nextMinutes.toString().padStart(2, '0')}`;
+        timeRemaining = Math.max(0, timeRemaining);
+        const { hours, minutes, secs } = calculateTimeComponents(timeRemaining);
 
         return {
-            remainingPrayerTime: `${formattedHours}:${formattedMinutes}:${formattedSeconds}`,
-            currentPrayerTime: formattedCurrentTime,
-            nextPrayerTime: formattedNextTime
+            remainingPrayerTime: `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`,
+            currentPrayerTime: formatTime(Math.floor(currentPrayerTime / 3600), Math.floor((currentPrayerTime % 3600) / 60)),
+            nextPrayerTime: formatTime(Math.floor(nextPrayerTime / 3600), Math.floor((nextPrayerTime % 3600) / 60)),
         };
-    };
-
-    useEffect(() => {
-        if (currentAndNextPrayersProperties?.nextPrayerTime) {
-            const timeRemaining = currentAndNextPrayersProperties.nextPrayerTime - currentTime;
-            setPrayerTimes(
-                formatTimeRemaining(
-                    timeRemaining,
-                    currentAndNextPrayersProperties.currentPrayerTime,
-                    currentAndNextPrayersProperties.nextPrayerTime
-                )
-            );
-        }
     }, [currentTime, currentAndNextPrayersProperties]);
+};
+
+// Hauptkomponente
+export default function PrayerTimes({ currentAndNextPrayersProperties, currentTime }: PrayerProps): JSX.Element {
+    const { selectedOption, showPicker } = usePrayerStatus();
+    const prayerTimes = useTimeCalculation(currentTime, currentAndNextPrayersProperties);
 
     return (
         <View style={styles.container}>
-            <View style={styles.currentPrayerContainer}>
-
-
-                <Text style={styles.containerHeader}>Aktuelle Gebetszeit:</Text>
-                <Text style={styles.remainingPrayerTime}>{prayerTimes.remainingPrayerTime} verbleibend</Text>
-
-                <Image source={currentAndNextPrayersProperties.currentPrayerImage} style={styles.prayersImage} />
-                <Text style={styles.prayersTimeText}>{currentAndNextPrayersProperties.currentPrayerName}: {prayerTimes.currentPrayerTime} Uhr</Text>
-                <LinearGradient
-                    colors={['#000000']} // Von tiefem Schwarz zu leichtem Grau
-                    style={styles.linearGradientContainer}
-                >
-            <Text
-                style={[
-                    styles.selectedOptionText,
-                    dynamicStyles.selectedOptionTextColor
-                ]}
-            >
-                {selectedOption}
-            </Text>
-            <TouchableOpacity
-                style={styles.optionSelector}
-                onPress={showPicker}
-            >
-                <Image style={styles.editImage} source={require('../../assets/images/edit1.png')}/>
-            </TouchableOpacity>
-                </LinearGradient>
-                <Image style={styles.arrowIcon}  source={require('../../assets/images/arrow.png')}/>
-            </View>
-            <View style={styles.nextPrayerContainer}>
-                    <Image
-                        source={currentAndNextPrayersProperties.nextPrayerImage}
-                        style={styles.nextPrayerImage}
-                    />
-                    <Text style={styles.nextPrayersTimeText}>{currentAndNextPrayersProperties.nextPrayerName}: {prayerTimes.nextPrayerTime} Uhr</Text>
-            </View>
+            <CurrentPrayer
+                selectedOption={selectedOption}
+                showPicker={showPicker}
+                prayerTimes={prayerTimes}
+                currentPrayerProps={currentAndNextPrayersProperties}
+            />
+            <NextPrayer
+                nextPrayerImage={currentAndNextPrayersProperties.nextPrayerImage}
+                nextPrayerName={currentAndNextPrayersProperties.nextPrayerName}
+                nextPrayerTime={prayerTimes.nextPrayerTime}
+            />
         </View>
     );
 }
 
-// Styles mit React Native Style Types
+// Unterkomponenten
+interface CurrentPrayerProps {
+    selectedOption: PrayerStatus;
+    showPicker: () => void;
+    prayerTimes: PrayerTimes;
+    currentPrayerProps: PrayerProps['currentAndNextPrayersProperties'];
+}
+
+const CurrentPrayer: React.FC<CurrentPrayerProps> = ({
+                                                         selectedOption,
+                                                         showPicker,
+                                                         prayerTimes,
+                                                         currentPrayerProps,
+                                                     }) => (
+    <View style={styles.currentPrayerContainer}>
+        <Text style={styles.containerHeader}>Aktuelle Gebetszeit:</Text>
+        <Text style={styles.remainingPrayerTime}>{prayerTimes.remainingPrayerTime} verbleibend</Text>
+        <Image source={currentPrayerProps.currentPrayerImage} style={styles.prayersImage} />
+        <Text style={styles.prayersTimeText}>
+            {currentPrayerProps.currentPrayerName}: {prayerTimes.currentPrayerTime} Uhr
+        </Text>
+        <LinearGradient colors={['#000000']} style={styles.linearGradientContainer}>
+            <Text style={[styles.selectedOptionText, { color: 'white' }]}>{selectedOption}</Text>
+            <TouchableOpacity style={styles.optionSelector} onPress={showPicker}>
+                <Image style={styles.editImage} source={require('../../assets/images/edit1.png')} />
+            </TouchableOpacity>
+        </LinearGradient>
+        <Image style={styles.arrowIcon} source={require('../../assets/images/arrow.png')} />
+    </View>
+);
+
+interface NextPrayerProps {
+    nextPrayerImage: any;
+    nextPrayerName: string;
+    nextPrayerTime: string;
+}
+
+const NextPrayer: React.FC<NextPrayerProps> = ({ nextPrayerImage, nextPrayerName, nextPrayerTime }) => (
+    <View style={styles.nextPrayerContainer}>
+        <Image source={nextPrayerImage} style={styles.nextPrayerImage} />
+        <Text style={styles.nextPrayersTimeText}>
+            {nextPrayerName}: {nextPrayerTime} Uhr
+        </Text>
+    </View>
+);
+
+// Styles
 const styles = StyleSheet.create({
     container: {
         padding: 2,
-        height: "100%",
+        height: '100%',
         width: '100%',
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
     } as ViewStyle,
     containerHeader: {
         textAlign: 'center',
         fontSize: 28,
-        fontWeight: "400",
-        color: 'white'
-    },
+        fontWeight: '400',
+        color: 'white',
+    } as TextStyle,
     remainingPrayerTime: {
         marginTop: 5,
         color: 'white',
         fontSize: 20,
-        fontWeight: '100'
-    },
+        fontWeight: '100',
+    } as TextStyle,
     prayersImage: {
         marginTop: 20,
         width: 190,
@@ -195,28 +202,28 @@ const styles = StyleSheet.create({
     } as ImageStyle,
     prayersTimeText: {
         marginTop: 15,
-        textAlign: "center",
+        textAlign: 'center',
         fontSize: 19,
-        fontWeight: "200",
-        color: "white",
+        fontWeight: '200',
+        color: 'white',
     } as TextStyle,
     currentPrayerContainer: {
-        alignItems: "center",
-    },
+        alignItems: 'center',
+    } as ViewStyle,
     linearGradientContainer: {
         margin: 20,
-        borderColor: "white",
+        borderColor: 'white',
         borderWidth: 0.5,
-        display: "flex",
-        flexDirection: "row",
+        display: 'flex',
+        flexDirection: 'row',
         width: 200,
         height: 50.5,
         borderRadius: 10,
-    },
+    } as ViewStyle,
     selectedOptionText: {
         marginTop: 15,
-        textAlign: "center",
-        width: "80%",
+        textAlign: 'center',
+        width: '80%',
         height: 50.5,
         fontSize: 15,
         fontWeight: '300',
@@ -224,47 +231,46 @@ const styles = StyleSheet.create({
     optionSelector: {
         borderRadius: 10,
         borderWidth: 1,
-        borderColor: "white",
-        // borderLeftColor: "grey",
+        borderColor: 'white',
         width: 50,
         height: 50.5,
-        position: "absolute",
+        position: 'absolute',
         right: 0,
-        alignItems: "center",
-        justifyContent: "center",
-        borderStyle: "solid",
-        backgroundColor: "white"
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderStyle: 'solid',
+        backgroundColor: 'white',
     } as ViewStyle,
     editImage: {
         width: 20,
         height: 20,
-        tintColor: "black",
-    } as TextStyle,
+        tintColor: 'black',
+    } as ImageStyle,
     arrowIcon: {
         marginTop: 10,
         width: 40,
         height: 40,
-        tintColor: "#ffffff",
+        tintColor: '#ffffff',
         opacity: 0.25,
-    },
+    } as ImageStyle,
     nextPrayerContainer: {
         marginTop: -20,
-        flex: 3 /4,
+        flex: 0.75,
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
         opacity: 0.3,
-    },
+    } as ViewStyle,
     nextPrayerImage: {
         width: 140,
         height: 140,
         borderRadius: 140,
         marginBottom: 10,
-    },
+    } as ImageStyle,
     nextPrayersTimeText: {
         color: 'white',
         fontSize: 15,
         fontWeight: '200',
         marginBottom: 10,
-    },
+    } as TextStyle,
 });

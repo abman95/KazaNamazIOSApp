@@ -11,6 +11,7 @@ export interface PrayerTimeIcons {
 export interface PrayerTimesProps {
     prayersImage: ImageSourcePropType | string;
     prayersTime: string;
+    setAllPrayerTriggerValue?: number;
 }
 
 interface currentAndNextPrayersProperties {
@@ -31,6 +32,11 @@ export interface PrayerStyles {
     selectedOptionTextColor: {
         color: string;
     };
+}
+
+export interface PrayerStatusFunction {
+    allPrayersStatusTrigger?: number | null;
+    callback: boolean;
 }
 
 export interface PrayerStatusResult {

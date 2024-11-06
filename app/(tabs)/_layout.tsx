@@ -1,10 +1,19 @@
-import { Tabs } from "expo-router";
+import { Stack, Tabs } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import PrayerEditsPage from "@/app/(tabs)/currentPrayer";
 
 export default function TabsLayout() {
     return (
         <>
+            <StatusBar style="auto" />
+            <Stack.Screen
+                options={{
+                    headerShown: false,
+                    gestureEnabled: false,
+                    href: null,
+                }}
+            />
+
             <StatusBar style="auto" />
             <Tabs>
                 <Tabs.Screen
@@ -24,7 +33,9 @@ export default function TabsLayout() {
                     }}
                 />
 
-        </Tabs>
+            </Tabs>
         </>
     );
 }
+
+
