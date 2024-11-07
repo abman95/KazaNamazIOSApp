@@ -83,7 +83,7 @@ export default memo(PrayerTimes);
 const styles = StyleSheet.create({
     container: {
         padding: 10,
-        height: 70,
+        height: 75,
         width: '100%',
         display: "flex",
         flexDirection: "row",
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     selectedOptionText: {
         flex: 4/4,
         textAlign: "left",
-        fontSize: 16,
+        fontSize: 17,
         fontWeight: "200",
         marginLeft: 20,
     } as TextStyle,

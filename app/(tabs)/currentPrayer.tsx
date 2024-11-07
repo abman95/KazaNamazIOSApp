@@ -164,7 +164,7 @@ export default function PrayerEditsPage(): JSX.Element {
 
             <View style={styles.container}>
                 <Text style={styles.currentDate}>
-                    {currentDate ? formatDate(currentDate) : "Datum wird geladen..."}
+                    Bremen, Deutschland - {currentDate ? formatDate(currentDate) : "Datum wird geladen..."}
                 </Text>
                 <View style={styles.prayersContainer}>
                     <CurrentPrayerTimes

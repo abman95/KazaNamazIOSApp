@@ -47,6 +47,7 @@ export default function PrayerEditsPage(): JSX.Element {
     const fetchPrayerTimes = useCallback(async () => {
         try {
             const today = new Date();
+            console.log(today)
             const formattedDate = today.toISOString().split('T')[0];
             const response = await fetch(
                 `${API_URL}/${formattedDate}?latitude=${LOCATION.latitude}&longitude=${LOCATION.longitude}&method=3&timezonestring=Europe/Berlin`
@@ -78,7 +79,6 @@ export default function PrayerEditsPage(): JSX.Element {
             const newTimeInSeconds = calculateTimeInSeconds();
             setTimeInSeconds(newTimeInSeconds);
         }, 1000);
-
         return () => clearInterval(timeInterval);
     }, []);
 
@@ -121,9 +121,9 @@ export default function PrayerEditsPage(): JSX.Element {
             <DatePicker />
 
             <View style={styles.editAllPrayersContainer}>
-                <Text style={styles.editAllPrayersDescription}>
-                    Alle Gebete bearbeiten
-                </Text>
+                {/*<Text style={styles.editAllPrayersDescription}>*/}
+                {/*</Text>*/}
+                <Image style={styles.editAllPrayersImage } source={require('../../assets/images/allPrayerTimesImage.png')}/>
                 <TouchableOpacity
                     style={styles.optionSelector}
                     onPress={showPicker}
@@ -137,7 +137,8 @@ export default function PrayerEditsPage(): JSX.Element {
 
             <View style={styles.prayersContainer}>
                 {PRAYER_TIMES.map(prayer => (
-                    prayerTimes[prayer] < timeInSeconds ? (
+                    // prayerTimes[prayer] < timeInSeconds ? (
+                        prayerTimes[prayer] < 85000 ? (
                         <PrayerTimes
                             key={`${prayer}-${prayerUpdate.timestamp}`}
                             prayersTime={prayer}
@@ -158,14 +159,17 @@ const styles = StyleSheet.create({
         backgroundColor: "black",
     },
     containerHeader: {
-        marginTop: 60,
+        marginTop: 70,
         textAlign: 'center',
         fontSize: 30,
         fontWeight: "bold",
         color: 'white'
     },
     editAllPrayersContainer: {
+        marginTop: -5,
         padding: 10,
+        width: "100%",
+        display: "flex",
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center"
@@ -175,8 +179,14 @@ const styles = StyleSheet.create({
         fontSize: 17,
         fontWeight: "300",
     },
+    editAllPrayersImage: {
+        borderRadius: 5,
+        width: 310,
+        height: 50,
+        objectFit: "cover",
+    },
     prayersContainer: {
-        marginTop: 30,
+        marginTop: 15,
         gap: 30,
     },
     optionSelector: {

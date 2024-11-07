@@ -14,7 +14,7 @@ export default function DatePicker() {
 
     return (
         <View style={styles.container}>
-            <Text style={{color: "white", fontSize: 19, fontWeight:"600"}}>Gewähltes Datum:</Text>
+            <Text style={{color: "white", fontSize: 17, fontWeight:"400"}}>Bremen, Deutschland</Text>
             <DateTimePicker
                 value={date}
                 mode="date"
@@ -27,13 +27,13 @@ export default function DatePicker() {
 
 const styles = StyleSheet.create({
     container: {
-        marginTop: 20,
-        paddingLeft: 20,
-        paddingRight: 20,
+        marginTop: 15,
+        paddingLeft: 10,
+        paddingRight: 10,
         width: '100%',
         display: "flex",
         flexDirection: "row",
-        justifyContent: "space-between",
+        justifyContent: "flex-start",
         alignItems: "center",
     },
 });
