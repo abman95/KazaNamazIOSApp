@@ -109,7 +109,7 @@ export default function PrayerEditsPage(): JSX.Element {
         try {
             const formattedDate = date.toISOString().split('T')[0];
             const response = await fetch(
-                `${API_URL}/${formattedDate}?latitude=${LOCATION.latitude}&longitude=${LOCATION.longitude}&method=3&timezonestring=Europe/Berlin`
+                `${API_URL}/${formattedDate}?latitude=${LOCATION.latitude}&longitude=${LOCATION.longitude}&method=13&timezonestring=Europe/Berlin`
             );
             const data = await response.json();
 

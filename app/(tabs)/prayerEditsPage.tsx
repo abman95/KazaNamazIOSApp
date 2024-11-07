@@ -1,9 +1,9 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import PrayerTimes from "@/components/PrayerTimes/PrayerTimes";
-import DatePicker from "@/components/PrayerTimes/DatePicker";
+import DatePicker from "@/components/DatePicker/DatePicker";
 import { ActionSheetIOS } from 'react-native';
-import {PrayerTimesProps} from "@/types/gebete";
+
 
 const PRAYER_TIMES = ['Morgen', 'Mittag', 'Nachmittag', 'Abend', 'Nacht'] as const;
 type PrayerTime = typeof PRAYER_TIMES[number];
@@ -37,6 +37,7 @@ export default function PrayerEditsPage(): JSX.Element {
     const [prayerUpdate, setPrayerUpdate] = useState({ value: 0, timestamp: Date.now() });
     const [prayerTimes, setPrayerTimes] = useState<PrayerTimesType>(DEFAULT_PRAYER_TIMES);
     const [timeInSeconds, setTimeInSeconds] = useState(0);
+    const [date, setDate] = useState<any>(new Date());
 
 
     const calculateTimeInSeconds = () => {
@@ -50,7 +51,7 @@ export default function PrayerEditsPage(): JSX.Element {
             console.log(today)
             const formattedDate = today.toISOString().split('T')[0];
             const response = await fetch(
-                `${API_URL}/${formattedDate}?latitude=${LOCATION.latitude}&longitude=${LOCATION.longitude}&method=3&timezonestring=Europe/Berlin`
+                `${API_URL}/${formattedDate}?latitude=${LOCATION.latitude}&longitude=${LOCATION.longitude}&method=13&timezonestring=Europe/Berlin`
             );
             const data = await response.json();
 
@@ -84,7 +85,6 @@ export default function PrayerEditsPage(): JSX.Element {
 
     useEffect(() => {
         fetchPrayerTimes();
-        console.log(prayerTimes)
     }, []);
 
     const showPicker = useCallback(() => {
@@ -118,11 +118,9 @@ export default function PrayerEditsPage(): JSX.Element {
     return (
         <View style={styles.container}>
             <Text style={styles.containerHeader}>Gebete Übersicht</Text>
-            <DatePicker />
+            <DatePicker setDate={setDate} />
 
             <View style={styles.editAllPrayersContainer}>
-                {/*<Text style={styles.editAllPrayersDescription}>*/}
-                {/*</Text>*/}
                 <Image style={styles.editAllPrayersImage } source={require('../../assets/images/allPrayerTimesImage.png')}/>
                 <TouchableOpacity
                     style={styles.optionSelector}
@@ -136,19 +134,43 @@ export default function PrayerEditsPage(): JSX.Element {
             </View>
 
             <View style={styles.prayersContainer}>
-                {PRAYER_TIMES.map(prayer => (
-                    // prayerTimes[prayer] < timeInSeconds ? (
-                        prayerTimes[prayer] < 85000 ? (
-                        <PrayerTimes
-                            key={`${prayer}-${prayerUpdate.timestamp}`}
-                            prayersTime={prayer}
-                            prayersImage={getImageForPrayer(prayer)}
-                            setAllPrayerTriggerValue={prayerUpdate.value}
-                        />
-                    ) : null
-                ))}
-            </View>
+                {PRAYER_TIMES.map((prayer) => {
+                    const prayerTime = prayerTimes[prayer];
+                    const currentDateTime = new Date();
+                    const selectedDateTime = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
+                    // If the selected date is in the future, don't render any prayer times
+                    if (selectedDateTime > currentDateTime) {
+                        return null;
+                    }
+
+                    // If the selected date is today, only render prayer times before the current time
+                    if (selectedDateTime.toLocaleDateString() === currentDateTime.toLocaleDateString()) {
+                        if (prayerTime < timeInSeconds) {
+                            return (
+                                <PrayerTimes
+                                    key={`${prayer}-${prayerUpdate.timestamp}`}
+                                    prayersTime={prayer}
+                                    prayersImage={getImageForPrayer(prayer)}
+                                    setAllPrayerTriggerValue={prayerUpdate.value}
+                                />
+                            );
+                        }
+                    } else {
+                        // If the selected date is in the past, render all prayer times
+                        return (
+                            <PrayerTimes
+                                key={`${prayer}-${prayerUpdate.timestamp}`}
+                                prayersTime={prayer}
+                                prayersImage={getImageForPrayer(prayer)}
+                                setAllPrayerTriggerValue={prayerUpdate.value}
+                            />
+                        );
+                    }
+
+                    return null;
+                })}
+            </View>
         </View>
     );
 }

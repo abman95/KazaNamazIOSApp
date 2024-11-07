@@ -172,7 +172,7 @@ export default function AuthScreen(): JSX.Element {
 
                     <View style={styles.form}>
                         <AuthInput
-                            placeholder="Email"
+                            placeholder="E-Mail"
                             value={formData.email}
                             onChangeText={handleInputChange('email')}
                             onSubmitEditing={handleSubmit}
@@ -220,7 +220,6 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: 70,
         paddingHorizontal: 20,
     } as ViewStyle,
     header: {

@@ -57,22 +57,24 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
                 source={prayersImage}
                 style={styles.prayersImage}
             />
-            <Text style={[
-                styles.selectedOptionText,
-                { color: 'white' }
-            ]}>
-                {prayersTime}: {selectedOption}
-            </Text>
-            <TouchableOpacity
-                style={styles.optionSelector}
-                onPress={handlePress}
-                activeOpacity={0.7}
-            >
-                <Image
-                    style={styles.editImage}
-                    source={require('../../assets/images/edit1.png')}
-                />
-            </TouchableOpacity>
+            <View style={ styles.selectedOptionTextAndOptionSelectorContainer}>
+                <Text style={[
+                    styles.selectedOptionText,
+                    { color: 'white' }
+                ]}>
+                    {prayersTime}: {selectedOption}
+                </Text>
+                <TouchableOpacity
+                    style={styles.optionSelector}
+                    onPress={handlePress}
+                    activeOpacity={0.7}
+                >
+                    <Image
+                        style={styles.editImage}
+                        source={require('../../assets/images/edit1.png')}
+                    />
+                </TouchableOpacity>
+            </View>
         </View>
     );
 };
@@ -102,24 +104,30 @@ const styles = StyleSheet.create({
         fontWeight: "100",
         color: "white",
     } as TextStyle,
+    selectedOptionTextAndOptionSelectorContainer: {
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        flex: 1,
+        borderColor: 'white',
+        borderWidth: 0.5,
+        height: 50.5,
+        borderRadius: 5,
+        marginLeft: 10,
+    },
     selectedOptionText: {
-        flex: 4/4,
-        textAlign: "left",
-        fontSize: 17,
+        fontSize: 16,
         fontWeight: "200",
-        marginLeft: 20,
+        marginLeft: 15,
     } as TextStyle,
     optionSelector: {
-        borderRadius: 10,
-        borderWidth: 1,
+        borderRadius: 5,
         borderColor: "white",
         width: 50,
         height: 50.5,
-        position: "absolute",
-        right: 10,
         alignItems: "center",
         justifyContent: "center",
-        borderStyle: "solid",
         backgroundColor: "white"
     } as ViewStyle,
     editImage: {

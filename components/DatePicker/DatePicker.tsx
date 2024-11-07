@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import {Text, View, StyleSheet, ActionSheetIOS, TouchableOpacity} from 'react-native';
 import DateTimePicker from "@react-native-community/datetimepicker";
-import {color} from "ansi-fragments";
 
 
-export default function DatePicker() {
-    const [date, setDate] = useState(new Date());
+export default function DatePicker({ setDate }: { setDate: (date: Date) => void }) {
+    const [date, setDateInternal] = useState(new Date());
 
-    const onChange = (event: unknown, selectedDate?: Date) => {
+    const onChange = (_event: unknown, selectedDate?: Date) => {
         const currentDate = selectedDate || date;
-        setDate(currentDate);
+        setDateInternal(currentDate);
+        setDate(currentDate); // Call the setDate function passed as a prop
     };
 
     return (

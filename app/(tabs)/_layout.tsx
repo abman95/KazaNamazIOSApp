@@ -1,6 +1,5 @@
 import { Stack, Tabs } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import PrayerEditsPage from "@/app/(tabs)/currentPrayer";
 
 export default function TabsLayout() {
     return (
@@ -19,7 +18,7 @@ export default function TabsLayout() {
                 <Tabs.Screen
                     name="currentPrayer"
                     options={{
-                        headerTitle: "Jetztiges Gebet",
+                        headerTitle: "Aktuelle Gebetszeit",
                         headerShown: false,
                         tabBarStyle: { backgroundColor: 'black' },
                     }}
@@ -27,7 +26,15 @@ export default function TabsLayout() {
                 <Tabs.Screen
                     name="prayerEditsPage"
                     options={{
-                        headerTitle: "Deine Gebete",
+                        headerTitle: "Gebete Übersicht",
+                        headerShown: false,
+                        tabBarStyle: { backgroundColor: 'black' },
+                    }}
+                />
+                <Tabs.Screen
+                    name="prayerStatistics"
+                    options={{
+                        headerTitle: "Gebete Statistik",
                         headerShown: false,
                         tabBarStyle: { backgroundColor: 'black' },
                     }}
@@ -37,5 +44,3 @@ export default function TabsLayout() {
         </>
     );
 }
-
-
