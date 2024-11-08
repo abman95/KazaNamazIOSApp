@@ -1,3 +1,26 @@
+# Kaza Namaz IOS App
+
+## Beschreibung
+
+Die **Kaza Namaz IOS App** hilft Benutzern, ihre Gebetszeiten zu verfolgen und Gebete zu verwalten. Die App bietet eine benutzerfreundliche Oberfläche zur Anzeige vergangener und zukünftiger Gebete. Sie ermöglicht es den Benutzern, Gebete als abgeschlossen zu markieren und zeigt Gebetsstatistiken an. Außerdem informiert die App über die aktuellen Gebetszeiten und das nächste Gebet.
+
+## Funktionen
+
+- **Gebetsübersicht**:
+  - Zeigt vergangene Gebete an, wenn ein Datum in der Vergangenheit gewählt wird.
+  - Zeigt keine Gebete für zukünftige Daten an.
+  
+- **Gebetsbearbeitung**:
+  - Markiere einzelne Gebete als abgeschlossen oder nicht abgeschlossen.
+  - Setze alle Gebete auf einmal als abgeschlossen oder nicht abgeschlossen.
+
+- **Gebetsstatistiken**:
+  - Zeigt Gebetsdiagramme an (Design vorhanden, Funktionalität folgt in zukünftigen Versionen).
+
+- **Aktuelle Gebetsanzeige**:
+  - Zeigt die aktuelle Gebetszeit, die nächste Gebetszeit und die verbleibende Zeit bis zum nächsten Gebet.
+  - Das aktuelle Datum wird ebenfalls angezeigt.
+
 <<<<<<< HEAD
 # Welcome to your Expo app 👋
 
