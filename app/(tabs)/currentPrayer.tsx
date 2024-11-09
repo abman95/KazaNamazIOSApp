@@ -1,9 +1,53 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, ImageSourcePropType } from 'react-native';
 import CurrentPrayerTimes from "@/components/PrayerTimes/CurrentPrayerTimes";
 import { Stack } from 'expo-router';
 
-const IMAGES = {
+// Type Definitions
+type PrayerTimeKey = 'morning' | 'noon' | 'afternoon' | 'evening' | 'night';
+type PrayerTimesType = Record<PrayerTimeKey, string>;
+type PrayerImagesType = Record<PrayerTimeKey, ImageSourcePropType>;
+
+interface PrayerInfo {
+    name: string;
+    image: ImageSourcePropType;
+}
+
+interface PrayerConfigItem {
+    current: PrayerInfo;
+    next: PrayerInfo;
+    timeKey: PrayerTimeKey;
+    nextTimeKey: PrayerTimeKey;
+}
+
+interface PrayerTimeResult {
+    currentPrayerImage: ImageSourcePropType;
+    nextPrayerImage: ImageSourcePropType;
+    currentPrayerTime: number;
+    nextPrayerTime: number;
+    nextPrayerName: string;
+    currentPrayerName: string;
+}
+
+interface LocationConfig {
+    latitude: number;
+    longitude: number;
+}
+
+interface ApiResponse {
+    data: {
+        timings: {
+            Fajr: string;
+            Dhuhr: string;
+            Asr: string;
+            Maghrib: string;
+            Isha: string;
+        };
+    };
+}
+
+// Constants
+const IMAGES: PrayerImagesType = {
     morning: require('../../assets/images/morgenGebet.jpg'),
     noon: require('../../assets/images/mittagGebet.jpg'),
     afternoon: require('../../assets/images/nachmittagGebet.jpg'),
@@ -11,9 +55,7 @@ const IMAGES = {
     night: require('../../assets/images/nachtGebet.jpg'),
 } as const;
 
-type PrayerTimesType = Record<'morning' | 'noon' | 'afternoon' | 'evening' | 'night', string>;
-
-const PRAYER_CONFIG = [
+const PRAYER_CONFIG: readonly PrayerConfigItem[] = [
     {
         current: { name: 'Morgengebet', image: IMAGES.morning },
         next: { name: 'Mittagsgebet', image: IMAGES.noon },
@@ -55,24 +97,24 @@ const DEFAULT_PRAYER_TIMES: PrayerTimesType = {
 };
 
 const API_URL = 'https://api.aladhan.com/v1/timings';
-const LOCATION = { latitude: 53.075878, longitude: 8.807311 };
+const LOCATION: LocationConfig = { latitude: 53.075878, longitude: 8.807311 };
 
 export default function PrayerEditsPage(): JSX.Element {
     const [prayerTimes, setPrayerTimes] = useState<PrayerTimesType>(DEFAULT_PRAYER_TIMES);
-    const [timeInSeconds, setTimeInSeconds] = useState(0);
-    const [currentDate, setCurrentDate] = useState(new Date());
+    const [timeInSeconds, setTimeInSeconds] = useState<number>(0);
+    const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
     const convertTimeToSeconds = (time: string): number => {
         const [hours, minutes] = time.split(':').map(Number);
         return hours * 3600 + minutes * 60;
     };
 
-    const calculateTimeInSeconds = () => {
+    const calculateTimeInSeconds = (): number => {
         const now = new Date();
-        return Math.floor((now - new Date(now).setHours(0, 0, 0, 0)) / 1000);
+        return Math.floor((now.getTime() - new Date(now).setHours(0, 0, 0, 0)) / 1000);
     };
 
-    const getPrayerTime = () => {
+    const getPrayerTime = (): PrayerTimeResult => {
         if (Object.values(prayerTimes).some(time => time === "0")) {
             return {
                 currentPrayerImage: IMAGES.morning,
@@ -84,10 +126,10 @@ export default function PrayerEditsPage(): JSX.Element {
             };
         }
 
-        const prayerTimeInSeconds = Object.entries(prayerTimes).reduce((acc, [key, value]) => ({
+        const prayerTimeInSeconds: Record<PrayerTimeKey, number> = Object.entries(prayerTimes).reduce((acc, [key, value]) => ({
             ...acc,
             [key]: convertTimeToSeconds(value)
-        }), {} as Record<keyof PrayerTimesType, number>);
+        }), {} as Record<PrayerTimeKey, number>);
 
         const currentConfig = PRAYER_CONFIG.find(config => {
             const currentTime = prayerTimeInSeconds[config.timeKey];
@@ -105,13 +147,13 @@ export default function PrayerEditsPage(): JSX.Element {
         };
     };
 
-    const fetchPrayerTimes = async (date: Date) => {
+    const fetchPrayerTimes = async (date: Date): Promise<void> => {
         try {
             const formattedDate = date.toISOString().split('T')[0];
             const response = await fetch(
                 `${API_URL}/${formattedDate}?latitude=${LOCATION.latitude}&longitude=${LOCATION.longitude}&method=13&timezonestring=Europe/Berlin`
             );
-            const data = await response.json();
+            const data: ApiResponse = await response.json();
 
             setPrayerTimes({
                 morning: data.data.timings.Fajr,
@@ -148,20 +190,12 @@ export default function PrayerEditsPage(): JSX.Element {
         return () => clearInterval(dateCheckInterval);
     }, [currentDate]);
 
-    const formatDate = (date: Date) => {
+    const formatDate = (date: Date): string => {
         return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
     };
 
     return (
         <>
-            <Stack.Screen
-                options={{
-                    headerShown: false,
-                    gestureEnabled: false, // Deaktiviert die Zurück-Geste
-                    href: null, // Entfernt aus dem Navigationsverlauf
-                }}
-            />
-
             <View style={styles.container}>
                 <Text style={styles.currentDate}>
                     Bremen, Deutschland - {currentDate ? formatDate(currentDate) : "Datum wird geladen..."}
@@ -193,3 +227,6 @@ const styles = StyleSheet.create({
         gap: 0,
     }
 });
+
+// Exports
+export type { PrayerTimeResult, PrayerTimesType, PrayerTimeKey };

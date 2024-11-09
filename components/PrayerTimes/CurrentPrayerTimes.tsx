@@ -11,6 +11,7 @@ import {
     ImageStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { ImageSourcePropType } from 'react-native'; // Importiere den richtigen Typ für Bilder
 
 // Typen
 type PrayerStatus = 'Nicht verrichtet' | 'verrichtet';
@@ -28,8 +29,8 @@ interface PrayerProps {
         nextPrayerName: string;
         currentPrayerTime: number;
         nextPrayerTime: number;
-        currentPrayerImage: any;
-        nextPrayerImage: any;
+        currentPrayerImage: ImageSourcePropType; // Verwende ImageSourcePropType statt any
+        nextPrayerImage: ImageSourcePropType; // Verwende ImageSourcePropType statt any
     };
     currentTime: number;
 }
@@ -158,7 +159,7 @@ const CurrentPrayer: React.FC<CurrentPrayerProps> = ({
 );
 
 interface NextPrayerProps {
-    nextPrayerImage: any;
+    nextPrayerImage: ImageSourcePropType; // Verwende ImageSourcePropType statt any
     nextPrayerName: string;
     nextPrayerTime: string;
 }

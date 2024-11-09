@@ -1,8 +1,5 @@
 import React, {useCallback, useState, useEffect} from 'react';
 import {Text, View, StyleSheet, Image} from 'react-native';
-import PrayerTimes from "@/components/PrayerTimes/PrayerTimes";
-import DatePicker from "@/components/DatePicker/DatePicker";
-
 
 export default function PrayerStatistics(): JSX.Element {
     const images = {
@@ -144,7 +141,7 @@ const styles = StyleSheet.create({
         height: 35,
         width: 80,
         backgroundColor: '#FF6B6B',
-        borderColor: '#D9534F',    // dunklere Farbe für den Rand
+        borderColor: '#D9534F',
         borderWidth: .5,
         justifyContent: 'center',
     },

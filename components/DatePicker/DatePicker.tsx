@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import {Text, View, StyleSheet, ActionSheetIOS, TouchableOpacity} from 'react-native';
-import DateTimePicker from "@react-native-community/datetimepicker";
+import { Text, View, StyleSheet } from 'react-native';
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 
+type DatePickerProps = {
+    setDate: (date: Date) => void;
+};
 
-export default function DatePicker({ setDate }: { setDate: (date: Date) => void }) {
+export function DatePicker({ setDate }: DatePickerProps) {
     const [date, setDateInternal] = useState(new Date());
 
-    const onChange = (_event: unknown, selectedDate?: Date) => {
+    const onChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
         const currentDate = selectedDate || date;
         setDateInternal(currentDate);
         setDate(currentDate); // Call the setDate function passed as a prop
@@ -14,7 +17,7 @@ export default function DatePicker({ setDate }: { setDate: (date: Date) => void 
 
     return (
         <View style={styles.container}>
-            <Text style={{color: "white", fontSize: 17, fontWeight:"400"}}>Bremen, Deutschland</Text>
+            <Text style={styles.locationText}>Bremen, Deutschland</Text>
             <DateTimePicker
                 value={date}
                 mode="date"
@@ -22,7 +25,7 @@ export default function DatePicker({ setDate }: { setDate: (date: Date) => void 
                 onChange={onChange}
             />
         </View>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
@@ -31,9 +34,13 @@ const styles = StyleSheet.create({
         paddingLeft: 10,
         paddingRight: 10,
         width: '100%',
-        display: "flex",
         flexDirection: "row",
         justifyContent: "flex-start",
         alignItems: "center",
+    },
+    locationText: {
+        color: "white",
+        fontSize: 17,
+        fontWeight: "400",
     },
 });

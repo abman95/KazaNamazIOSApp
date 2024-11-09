@@ -2,7 +2,13 @@
 import React from 'react';
 import { TextInput, StyleSheet, Keyboard, Dimensions } from 'react-native';
 import { COLORS, SIZES } from '@/constants/theme';
-import { AuthInputProps } from '@/types/auth';
+
+type AuthInputProps= {
+    placeholder: string;
+    isPassword: boolean;
+    value: string;
+    onChangeText: (text: string) => void;
+}
 
 const { width, height } = Dimensions.get('window');
 

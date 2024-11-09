@@ -18,39 +18,51 @@ import { AuthInput } from '@/components/Authentication/AuthInput';
 import { AuthButton } from '@/components/Authentication/AuthButton';
 import { COLORS, SIZES } from '@/constants/theme';
 
-// Types
-interface FormData {
-    email: string;
-    password: string;
+// Types and Interfaces
+export interface FormData {
+    readonly email: string;
+    readonly password: string;
 }
 
-type AuthMode = 'login' | 'register';
+export type AuthMode = 'login' | 'register';
 
 interface ValidationResult {
-    isValid: boolean;
-    message: string;
+    readonly isValid: boolean;
+    readonly message: string;
+}
+
+interface UseAuthFormReturn {
+    readonly formData: FormData;
+    readonly handleInputChange: (field: keyof FormData) => (value: string) => void;
+    readonly resetForm: () => void;
+}
+
+interface UseAuthReturn {
+    readonly authMode: AuthMode;
+    readonly toggleAuthMode: () => void;
+    readonly handleAuthentication: (data: FormData) => Promise<void>;
 }
 
 // Constants
-const INITIAL_FORM_DATA: FormData = {
+const INITIAL_FORM_DATA: Readonly<FormData> = {
     email: '',
     password: '',
-};
+} as const;
 
-const TEST_CREDENTIALS: FormData = {
+const TEST_CREDENTIALS: Readonly<FormData> = {
     email: 'A',
     password: 'a',
-};
+} as const;
 
 // Custom Hooks
-const useAuthForm = (initialState: FormData = INITIAL_FORM_DATA) => {
+const useAuthForm = (initialState: FormData = INITIAL_FORM_DATA): UseAuthFormReturn => {
     const [formData, setFormData] = useState<FormData>(initialState);
 
-    const handleInputChange = useCallback((field: keyof FormData) => (
-        value: string,
-    ): void => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-    }, []);
+    const handleInputChange = useCallback((field: keyof FormData) =>
+            (value: string): void => {
+                setFormData(prev => ({ ...prev, [field]: value }));
+            },
+        []);
 
     const resetForm = useCallback((): void => {
         setFormData(INITIAL_FORM_DATA);
@@ -63,7 +75,7 @@ const useAuthForm = (initialState: FormData = INITIAL_FORM_DATA) => {
     };
 };
 
-const useAuth = () => {
+const useAuth = (): UseAuthReturn => {
     const [authMode, setAuthMode] = useState<AuthMode>('login');
     const router = useRouter();
 
@@ -79,7 +91,6 @@ const useAuth = () => {
             };
         }
 
-        // Email Validierung
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(data.email) && data.email !== TEST_CREDENTIALS.email) {
             return {
@@ -88,7 +99,6 @@ const useAuth = () => {
             };
         }
 
-        // Passwort-Validierung für Registrierung
         if (authMode === 'register' && data.password.length < 8) {
             return {
                 isValid: false,
@@ -113,27 +123,29 @@ const useAuth = () => {
 
             try {
                 if (authMode === 'login') {
-                    // In einer echten App würde hier die API-Authentifizierung stattfinden
                     if (
                         data.email === TEST_CREDENTIALS.email &&
                         data.password === TEST_CREDENTIALS.password
                     ) {
-                        router.push('/currentPrayer');
+                        await router.push('/currentPrayer');
                     } else {
                         Alert.alert('Fehler', 'Login-Daten sind falsch!');
                     }
                 } else {
-                    // Registrierungslogik hier implementieren
                     Alert.alert('Info', 'Registrierung ist noch nicht implementiert.');
                 }
             } catch (error) {
-                Alert.alert(
-                    'Fehler',
-                    'Bei der Authentifizierung ist ein Fehler aufgetreten.',
-                );
+                if (error instanceof Error) {
+                    Alert.alert('Fehler', error.message);
+                } else {
+                    Alert.alert(
+                        'Fehler',
+                        'Bei der Authentifizierung ist ein Fehler aufgetreten.',
+                    );
+                }
             }
         },
-        [authMode, router],
+        [authMode, router, validateForm],
     );
 
     return {
@@ -143,14 +155,13 @@ const useAuth = () => {
     };
 };
 
-// Main Component
-export default function AuthScreen(): JSX.Element {
-    const { formData, handleInputChange, resetForm } = useAuthForm();
+export const AuthScreen: React.FC = () => {
+    const { formData, handleInputChange } = useAuthForm();
     const { authMode, toggleAuthMode, handleAuthentication } = useAuth();
 
     const handleSubmit = useCallback((): void => {
         Keyboard.dismiss();
-        handleAuthentication(formData);
+        void handleAuthentication(formData);
     }, [formData, handleAuthentication]);
 
     return (
@@ -168,6 +179,7 @@ export default function AuthScreen(): JSX.Element {
                     <Image
                         source={require('../assets/images/loginMannequin.jpg')}
                         style={styles.image}
+                        accessibilityLabel="Login Mannequin"
                     />
 
                     <View style={styles.form}>
@@ -179,21 +191,26 @@ export default function AuthScreen(): JSX.Element {
                             keyboardType="email-address"
                             autoCapitalize="none"
                             autoComplete="email"
+                            testID="email-input"
+                            returnKeyType="next"
                         />
 
                         <AuthInput
                             placeholder="Passwort"
-                            isPassword
                             value={formData.password}
                             onChangeText={handleInputChange('password')}
                             onSubmitEditing={handleSubmit}
                             autoCapitalize="none"
                             autoComplete="password"
+                            testID="password-input"
+                            returnKeyType="done"
+                            isPassword
                         />
 
                         <AuthButton
                             title={authMode === 'login' ? 'Einloggen' : 'Registrieren'}
                             onPress={handleSubmit}
+                            testID="submit-button"
                         />
 
                         <Text style={styles.toggleText}>
@@ -208,8 +225,7 @@ export default function AuthScreen(): JSX.Element {
             </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
     );
-}
-
+};
 // Styles
 const styles = StyleSheet.create({
     container: {
@@ -221,6 +237,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: 20,
+        marginTop: 80,
     } as ViewStyle,
     header: {
         color: COLORS.white,
@@ -248,3 +265,5 @@ const styles = StyleSheet.create({
         textDecorationLine: 'underline',
     } as TextStyle,
 });
+
+export default AuthScreen;
