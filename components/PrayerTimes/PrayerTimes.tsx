@@ -17,7 +17,7 @@ import {
 interface PrayerTimesProps {
     prayersImage: ImageSourcePropType;
     prayersTimeName: string;
-    prayerTimes: number;
+    prayerTimes: string;
     setAllPrayerTriggerValue?: number;
     setPrayerUpdate?: (update: { value: number; timestamp: number }) => void;
 }
@@ -63,15 +63,6 @@ export const PrayerTimes: React.FC<PrayerTimesProps> = ({
         }
     }, [setAllPrayerTriggerValue]);
 
-    // Umrechnung von Sekunden in Stunden:Minuten:Sekunden
-    const convertPrayerSecondsToTime = useMemo(() => {
-        const hours = Math.floor(prayerTimes / 3600);
-        const remainingSeconds = prayerTimes % 3600;
-        const minutes = Math.floor(remainingSeconds / 60);
-        const secs = remainingSeconds % 60;
-        return { hours, minutes, secs };
-    }, [prayerTimes]);
-
     return (
         <View style={styles.container}>
             <TouchableOpacity onPress={handlePress} activeOpacity={0.7}>
@@ -82,7 +73,7 @@ export const PrayerTimes: React.FC<PrayerTimesProps> = ({
                         {prayersTimeName !== 'AlleGebete' && (
                             <>
                                 <Text style={styles.prayersTimes}>
-                                    {convertPrayerSecondsToTime.hours}:{convertPrayerSecondsToTime.minutes} Uhr
+                                    {prayerTimes} Uhr
                                 </Text>
                                 <Text style={styles.selectedOptionText}>{selectedOption}</Text>
                             </>

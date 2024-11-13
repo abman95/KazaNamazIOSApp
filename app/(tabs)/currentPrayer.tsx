@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import { Text, View, StyleSheet, ImageSourcePropType } from 'react-native';
 import CurrentPrayerTimes from "@/components/PrayerTimes/CurrentPrayerTimes";
-import { Stack } from 'expo-router';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {useFocusEffect} from "@react-navigation/native";
 
 // Type Definitions
 type PrayerTimeKey = 'morning' | 'noon' | 'afternoon' | 'evening' | 'night';
@@ -30,8 +31,14 @@ interface PrayerTimeResult {
 }
 
 interface LocationConfig {
-    latitude: number;
-    longitude: number;
+    name: string;
+    latitude: string;
+    longitude: string;
+}
+
+interface MethodConfig {
+    id: string;
+    name: string;
 }
 
 interface ApiResponse {
@@ -96,13 +103,29 @@ const DEFAULT_PRAYER_TIMES: PrayerTimesType = {
     night: "0",
 };
 
+const DEFAULT_COUNTRY: LocationConfig = {
+    name: "Bremen",
+    latitude: "53.075878",
+    longitude: "8.807311",
+};
+
+const DEFAULT_METHOD: MethodConfig = {
+    id: "13",
+    name: "Diyanet İşleri Başkanlığı, Turkey",
+};
+
 const API_URL = 'https://api.aladhan.com/v1/timings';
-const LOCATION: LocationConfig = { latitude: 53.075878, longitude: 8.807311 };
 
 export default function PrayerEditsPage(): JSX.Element {
     const [prayerTimes, setPrayerTimes] = useState<PrayerTimesType>(DEFAULT_PRAYER_TIMES);
     const [timeInSeconds, setTimeInSeconds] = useState<number>(0);
     const [currentDate, setCurrentDate] = useState<Date>(new Date());
+    const [selectedCountry, setSelectedCountry] = useState<LocationConfig>(DEFAULT_COUNTRY);
+    const [selectedMethod, setSelectedMethod] = useState<MethodConfig>(DEFAULT_METHOD);
+    const [isInitialized, setIsInitialized] = useState(false);
+
+    const prevSelectedCountry = useRef<LocationConfig | null>(null);
+    const prevSelectedMethod = useRef<MethodConfig | null>(null);
 
     const convertTimeToSeconds = (time: string): number => {
         const [hours, minutes] = time.split(':').map(Number);
@@ -114,7 +137,68 @@ export default function PrayerEditsPage(): JSX.Element {
         return Math.floor((now.getTime() - new Date(now).setHours(0, 0, 0, 0)) / 1000);
     };
 
-    const getPrayerTime = (): PrayerTimeResult => {
+    const loadInitialData = useCallback(async () => {
+        try {
+            const [countryJson, methodJson] = await Promise.all([
+                AsyncStorage.getItem('selectedCountry'),
+                AsyncStorage.getItem('selectedMethod')
+            ]);
+
+            if (countryJson) {
+                const parsedCountry = JSON.parse(countryJson);
+                console.log('Loaded country from storage:', parsedCountry);
+                setSelectedCountry(parsedCountry);
+            }
+
+            if (methodJson) {
+                const parsedMethod = JSON.parse(methodJson);
+                console.log('Loaded method from storage:', parsedMethod);
+                setSelectedMethod(parsedMethod);
+            }
+            setIsInitialized(true);
+        } catch (error) {
+            console.error('Error loading initial data:', error);
+        }
+    }, []);
+
+    const fetchPrayerTimes = useCallback(async (date: Date, selectedCountry: LocationConfig, selectedMethod: MethodConfig): Promise<void> => {
+        if (!selectedCountry || !selectedMethod) {
+            console.log('Missing required data for API call:', { selectedCountry, selectedMethod });
+            return;
+        }
+        try {
+            console.log('Fetching prayer times with:', {
+                country: selectedCountry,
+                method: selectedMethod,
+                date: date
+            });
+
+            const formattedDate = date.toISOString().split('T')[0];
+            const response = await fetch(
+                `${API_URL}/${formattedDate}?latitude=${selectedCountry.latitude}&longitude=${selectedCountry.longitude}&method=${selectedMethod.id}&timezonestring=Europe/Berlin`
+            );
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data: ApiResponse = await response.json();
+
+            setPrayerTimes({
+                morning: data.data.timings.Fajr,
+                noon: data.data.timings.Dhuhr,
+                afternoon: data.data.timings.Asr,
+                evening: data.data.timings.Maghrib,
+                night: data.data.timings.Isha
+            });
+            setIsInitialized(true);
+        } catch (error) {
+            console.error('Fehler beim Laden der Gebetszeiten:', error);
+            setPrayerTimes(DEFAULT_PRAYER_TIMES);
+        }
+    }, []);
+
+    const getPrayerTime = useCallback((): PrayerTimeResult => {
         if (Object.values(prayerTimes).some(time => time === "0")) {
             return {
                 currentPrayerImage: IMAGES.morning,
@@ -145,69 +229,76 @@ export default function PrayerEditsPage(): JSX.Element {
             nextPrayerName: currentConfig.next.name,
             currentPrayerName: currentConfig.current.name,
         };
-    };
+    }, [prayerTimes, timeInSeconds]);
 
-    const fetchPrayerTimes = async (date: Date): Promise<void> => {
-        try {
-            const formattedDate = date.toISOString().split('T')[0];
-            const response = await fetch(
-                `${API_URL}/${formattedDate}?latitude=${LOCATION.latitude}&longitude=${LOCATION.longitude}&method=13&timezonestring=Europe/Berlin`
-            );
-            const data: ApiResponse = await response.json();
+    useFocusEffect(
+        useCallback(() => {
+            void loadInitialData();
 
-            setPrayerTimes({
-                morning: data.data.timings.Fajr,
-                noon: data.data.timings.Dhuhr,
-                afternoon: data.data.timings.Asr,
-                evening: data.data.timings.Maghrib,
-                night: data.data.timings.Isha
-            });
-        } catch (error) {
-            console.error(error);
-            setPrayerTimes(DEFAULT_PRAYER_TIMES);
+            return () => {
+            };
+        }, [])
+    );
+
+    useEffect(() => {
+        if (isInitialized) {
+            const delayedFetchPrayerTimes = setTimeout(() => {
+                if (
+                    JSON.stringify(selectedCountry) !== JSON.stringify(prevSelectedCountry.current) ||
+                    JSON.stringify(selectedMethod) !== JSON.stringify(prevSelectedMethod.current)
+                ) {
+                    void fetchPrayerTimes(currentDate, selectedCountry, selectedMethod);
+                    prevSelectedCountry.current = selectedCountry;
+                    prevSelectedMethod.current = selectedMethod;
+                }
+            }, 500); // 500ms Verzögerung
+
+            return () => clearTimeout(delayedFetchPrayerTimes);
         }
-    };
+    }, [selectedCountry, selectedMethod, isInitialized]);
 
     useEffect(() => {
         const timeInterval = setInterval(() => {
             setTimeInSeconds(calculateTimeInSeconds());
         }, 1000);
 
-        return () => clearInterval(timeInterval);
-    }, []);
-
-    useEffect(() => {
-        fetchPrayerTimes(currentDate);
-
         const dateCheckInterval = setInterval(() => {
             const now = new Date();
             if (now.getDate() !== currentDate.getDate()) {
                 setCurrentDate(now);
-                fetchPrayerTimes(now);
             }
         }, 60000);
 
-        return () => clearInterval(dateCheckInterval);
+        return () => {
+            clearInterval(timeInterval);
+            clearInterval(dateCheckInterval);
+        };
     }, [currentDate]);
 
     const formatDate = (date: Date): string => {
         return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
     };
 
-    return (
-        <>
+    if (!isInitialized) {
+        return (
             <View style={styles.container}>
-                <Text style={styles.currentDate}>
-                    Bremen, Deutschland - {currentDate ? formatDate(currentDate) : "Datum wird geladen..."}
-                </Text>
-                <View style={styles.prayersContainer}>
-                    <CurrentPrayerTimes
-                        currentAndNextPrayersProperties={getPrayerTime()}
-                        currentTime={timeInSeconds}
-                    />
-                </View>
+                <Text style={styles.currentDate}>Laden...</Text>
             </View>
-        </>
+        );
+    }
+
+    return (
+        <View style={styles.container}>
+            <Text style={styles.currentDate}>
+                {selectedCountry.name}, Deutschland - {currentDate ? formatDate(currentDate) : "Datum wird geladen..."}
+            </Text>
+            <View style={styles.prayersContainer}>
+                <CurrentPrayerTimes
+                    currentAndNextPrayersProperties={getPrayerTime()}
+                    currentTime={timeInSeconds}
+                />
+            </View>
+        </View>
     );
 }
 
@@ -228,5 +319,4 @@ const styles = StyleSheet.create({
     }
 });
 
-// Exports
 export type { PrayerTimeResult, PrayerTimesType, PrayerTimeKey };

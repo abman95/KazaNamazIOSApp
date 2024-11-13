@@ -4,9 +4,14 @@ import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/dat
 
 type DatePickerProps = {
     setDate: (date: Date) => void;
+    selectedCountry: {
+        name: string;
+        latitude: string;
+        longitude: string;
+    }
 };
 
-export function DatePicker({ setDate }: DatePickerProps) {
+export function DatePicker({ setDate, selectedCountry }: DatePickerProps) {
     const [date, setDateInternal] = useState(new Date());
 
     const onChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
@@ -17,7 +22,7 @@ export function DatePicker({ setDate }: DatePickerProps) {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.locationText}>Bremen, Deutschland</Text>
+            <Text style={styles.locationText}>{selectedCountry.name}, Deutschland</Text>
             <DateTimePicker
                 value={date}
                 mode="date"
@@ -31,7 +36,7 @@ export function DatePicker({ setDate }: DatePickerProps) {
 const styles = StyleSheet.create({
     container: {
         marginTop: 15,
-        paddingLeft: 10,
+        paddingLeft: 20,
         paddingRight: 10,
         width: '100%',
         flexDirection: "row",
