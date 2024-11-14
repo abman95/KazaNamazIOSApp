@@ -2,7 +2,7 @@
 import {PrayerOption, PrayerTimes } from '@/types/prayer.types'
 
 
-export const PRAYER_OPTIONS: PrayerOption[] = ['Nicht verrichtet', 'verrichtet', 'Abbrechen'];
+export const PRAYER_OPTIONS: PrayerOption[] = ['offen', 'erledigt', 'Abbrechen'];
 
 export const INITIAL_PRAYER_TIMES: PrayerTimes = {
     remainingPrayerTime: '00:00:00',

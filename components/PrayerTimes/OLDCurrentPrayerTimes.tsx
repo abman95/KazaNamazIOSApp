@@ -16,9 +16,6 @@ import DatabaseService from "@/database/database";
 import {useFocusEffect} from "@react-navigation/native";
 import {string} from "prop-types";
 
-// Typen
-type PrayerStatus = 'Nicht verrichtet' | 'verrichtet';
-type PrayerOption = PrayerStatus | 'Abbrechen';
 
 // Database instance
 const databaseService = new DatabaseService();
@@ -44,7 +41,9 @@ interface PrayerProps {
 }
 
 // Konstanten
-const PRAYER_OPTIONS: PrayerOption[] = ['Nicht verrichtet', 'verrichtet', 'Abbrechen'];
+type PrayerStatus = 'offen' | 'erledigt' | 'Abbrechen';
+
+const PRAYER_OPTIONS: PrayerStatus[] = ['offen', 'erledigt', 'Abbrechen'];
 const INITIAL_PRAYER_TIMES: PrayerTimes = {
     remainingPrayerTime: '00:00:00',
     currentPrayerTime: '00:00:00',
@@ -66,7 +65,7 @@ const calculateTimeComponents = (seconds: number): { hours: number; minutes: num
 
 // Custom Hooks
 const usePrayerStatus = () => {
-    const [selectedOption, setSelectedOption] = useState<PrayerStatus>('Nicht verrichtet');
+    const [selectedOption, setSelectedOption] = useState<PrayerStatus>('offen');
 
     const addNamaz = useCallback(async (currentDate: string, prayerName: string, status: string) => {
         try {
@@ -142,7 +141,7 @@ const useTimeCalculation = (
 // Hauptkomponente
 // EditPrayerTimes.tsx (relevant parts)
 export default function PrayerTimes({ currentAndNextPrayersProperties, currentTime }: PrayerProps): JSX.Element {
-    const [selectedOption, setSelectedOption] = useState<PrayerStatus>('Nicht verrichtet');
+    const [selectedOption, setSelectedOption] = useState<PrayerStatus>('offen');
     const [isLoading, setIsLoading] = useState(true);
     const prayerTimes = useTimeCalculation(currentTime, currentAndNextPrayersProperties);
     const [currentDate] = useState<string>(

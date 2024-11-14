@@ -1,7 +1,7 @@
 // src/types/prayer.types.ts
 import { ImageSourcePropType } from 'react-native';
 
-export type PrayerStatus = 'Nicht verrichtet' | 'verrichtet';
+export type PrayerStatus = 'offen' | 'erledigt';
 export type PrayerOption = PrayerStatus | 'Abbrechen';
 
 export interface PrayerTimes {
@@ -18,6 +18,7 @@ export interface PrayerProperties {
     currentPrayerImage: ImageSourcePropType;
     nextPrayerImage: ImageSourcePropType;
     currentDate: Date;
+
 }
 
 export interface PrayerProps {

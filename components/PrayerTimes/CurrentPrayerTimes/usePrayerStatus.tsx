@@ -1,25 +1,40 @@
 // src/hooks/usePrayerStatus.ts
-import { useState, useCallback } from 'react';
+import {useState, useCallback, useRef} from 'react';
 import {ActionSheetIOS, Alert} from 'react-native';
 import DatabaseService from '@/database/database';
-import { PrayerStatus, PrayerOption } from '@/types/prayer.types';
 import { PRAYER_OPTIONS } from '@/components/PrayerTimes/CurrentPrayerTimes/prayer.constants';
+import {convertPrayerName} from "@/components/PrayerTimes/CurrentPrayerTimes/convertPrayerName";
+import {useFocusEffect} from "@react-navigation/native";
 
 const databaseService = new DatabaseService();
 
 export const usePrayerStatus = () => {
-    const [selectedOption, setSelectedOption] = useState<PrayerStatus>('Nicht verrichtet');
+    const [selectedOption, setSelectedOption] = useState<string>('');
 
     const addNamaz = useCallback(async (currentDate: string, prayerName: string, status: string) => {
         try {
+            // Konvertiere den Gebetsnamen
+            const prayerNameTrimmed = convertPrayerName(prayerName);
+
+            // Speichere den Eintrag mit dem konvertierten Gebetsnamen
             await databaseService.initializeDatabase();
             await databaseService.addKazaNamaz(
                 currentDate,
-                prayerName,
-                status === 'verrichtet' ? 'erledigt' : 'offen'
+                prayerNameTrimmed,
+                status
             );
+
             alert('Prayer status saved successfully');
             console.log('Prayer status saved successfully');
+
+            // Verzögerung von 0,5 Sekunden (500 ms), bevor der neue Status abgerufen wird
+            setTimeout(async () => {
+                const status = await databaseService.getPrayerStatus(
+                    currentDate,
+                    prayerNameTrimmed
+                );
+                setSelectedOption(status);  // Setze den neuen Status
+            }, 500); // Verzögerung von 0,5 Sekunden
         } catch (error) {
             console.error('Error saving prayer status:', error);
             throw error;
@@ -34,7 +49,7 @@ export const usePrayerStatus = () => {
             },
             async (buttonIndex: number) => {
                 if (buttonIndex !== 2) {
-                    const newStatus = PRAYER_OPTIONS[buttonIndex] as PrayerStatus;
+                    const newStatus = PRAYER_OPTIONS[buttonIndex] as string;
                     setSelectedOption(newStatus);
                     try {
                         const formattedDate = currentDate.toISOString().split('T')[0];

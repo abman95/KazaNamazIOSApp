@@ -1,5 +1,9 @@
-import React, { useEffect, useCallback, memo, useMemo } from 'react';
+import React, {useEffect, useCallback, memo, useState} from 'react';
+import {useFocusEffect} from "@react-navigation/native";
 import {
+    ViewStyle,
+    ImageStyle,
+    TextStyle,
     Text,
     View,
     StyleSheet,
@@ -7,67 +11,142 @@ import {
     TouchableOpacity,
     Image,
     type ImageSourcePropType,
-    type ViewStyle,
-    type TextStyle,
-    type ImageStyle,
     Dimensions,
 } from 'react-native';
+import DatabaseService from "@/database/database";
 
-// Typen für Props
+const databaseService = new DatabaseService();
+
+// Vorab geladene und zwischengespeicherte Bilder
+export const CACHED_IMAGES = {
+    allPrayers: require('../../assets/images/allPrayerTimesImageCube.png'),
+    morning: require('../../assets/images/morgenGebet.jpg'),
+    noon: require('../../assets/images/mittagGebet.jpg'),
+    afternoon: require('../../assets/images/nachmittagGebet.jpg'),
+    evening: require('../../assets/images/abendGebet.jpg'),
+    night: require('../../assets/images/nachtGebet.jpg'),
+} as const;
+
 interface PrayerTimesProps {
-    prayersImage: ImageSourcePropType;
+    prayersImage: keyof typeof CACHED_IMAGES;
     prayersTimeName: string;
     prayerTimes: string;
-    setAllPrayerTriggerValue?: number;
     setPrayerUpdate?: (update: { value: number; timestamp: number }) => void;
+    formattedSelectedDate: string;
+    globalUpdateTrigger?: number;
 }
 
-// Optionen für das ActionSheet
-const OPTIONS = ['Nicht verrichtet', 'verrichtet', 'Abbrechen'] as const;
-const INITIAL_OPTION = OPTIONS[0];
+const OPTIONS = ['offen', 'erledigt', 'Abbrechen'] as const;
 const CANCEL_INDEX = 2;
 
-export const EditPrayerTimes: React.FC<PrayerTimesProps> = ({
-                                                            prayerTimes,
-                                                            prayersTimeName,
-                                                            prayersImage,
-                                                            setAllPrayerTriggerValue = 0,
-                                                            setPrayerUpdate,
-                                                        }) => {
-    // Zustand für die Auswahl
-    const [selectedOption, setSelectedOption] = React.useState(INITIAL_OPTION);
+export const EditPrayerTimes = memo(function EditPrayerTimes({
+                                                                 prayerTimes,
+                                                                 prayersTimeName,
+                                                                 prayersImage,
+                                                                 setPrayerUpdate,
+                                                                 formattedSelectedDate,
+                                                                 globalUpdateTrigger
+                                                             }: PrayerTimesProps) {
+    const [selectedOption, setSelectedOption] = useState<string>();
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Handle für das ActionSheet
-    const handlePress = useCallback(() => {
+    const initAndLoad = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            await databaseService.initializeDatabase();
+            const status = await databaseService.getPrayerStatus(
+                formattedSelectedDate,
+                prayersTimeName,
+            );
+            setSelectedOption(status);
+        } catch (error) {
+            console.error('Error initializing and loading prayer status:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [formattedSelectedDate, prayersTimeName]);
+
+    useEffect(() => {
+        if (globalUpdateTrigger !== undefined) {
+            initAndLoad();
+        }
+    }, [globalUpdateTrigger, initAndLoad]);
+
+    useFocusEffect(
+        useCallback(() => {
+            initAndLoad();
+        }, [initAndLoad])
+    );
+
+    const addNamaz = useCallback(async (currentDate: string, prayerName: string, status: string) => {
+        try {
+            await databaseService.initializeDatabase();
+
+            if (prayerName === "AlleGebete") {
+                const prayerTypes = ["Morgen", "Mittag", "Nachmittag", "Abend", "Nacht"];
+                await Promise.all(prayerTypes.map(type =>
+                    databaseService.addKazaNamaz(currentDate, type, status)
+                ));
+
+                setSelectedOption(status);
+
+                if (setPrayerUpdate) {
+                    setPrayerUpdate({
+                        value: Date.now(),
+                        timestamp: Date.now()
+                    });
+                }
+            } else {
+                await databaseService.addKazaNamaz(currentDate, prayerName, status);
+                setSelectedOption(status);
+            }
+        } catch (error) {
+            console.error('Error saving prayer status:', error);
+            throw error;
+        }
+    }, [setPrayerUpdate]);
+
+    const handlePress = useCallback(({formattedSelectedDate, prayersTimeName}: {
+        formattedSelectedDate: string;
+        prayersTimeName: string;
+    }) => {
         ActionSheetIOS.showActionSheetWithOptions(
             {
                 options: OPTIONS,
                 cancelButtonIndex: CANCEL_INDEX,
             },
-            (buttonIndex: number) => {
+            async (buttonIndex: number) => {
                 if (buttonIndex !== CANCEL_INDEX) {
-                    if (setPrayerUpdate) {
-                        setPrayerUpdate({ value: buttonIndex, timestamp: Date.now() });
-                    } else {
-                        setSelectedOption(OPTIONS[buttonIndex]);
-                    }
+                    const selectedStatus = OPTIONS[buttonIndex];
+                    await addNamaz(formattedSelectedDate, prayersTimeName, selectedStatus);
                 }
             }
         );
-    }, [setPrayerUpdate]);
+    }, [addNamaz]);
 
-    // Effekt zum Aktualisieren der Option, wenn `setAllPrayerTriggerValue` gesetzt wird
-    useEffect(() => {
-        if (setAllPrayerTriggerValue !== undefined) {
-            setSelectedOption(OPTIONS[setAllPrayerTriggerValue]);
-        }
-    }, [setAllPrayerTriggerValue]);
+    if (isLoading) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.containerHeader}>Loading...</Text>
+            </View>
+        );
+    }
+
+    // Verwende zwischengespeichertes Bild
+    const imageSource = CACHED_IMAGES[prayersImage];
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity onPress={handlePress} activeOpacity={0.7}>
+            <TouchableOpacity
+                onPress={() => handlePress({ formattedSelectedDate, prayersTimeName })}
+                activeOpacity={0.7}
+            >
                 <View style={styles.imageContainer}>
-                    <Image source={prayersImage} style={styles.prayersImage} />
+                    <Image
+                        source={imageSource}
+                        style={styles.prayersImage}
+                        defaultSource={imageSource}
+                    />
                     <View style={styles.overlayContainer}>
                         <Text style={styles.prayersTimeName}>{prayersTimeName}</Text>
                         {prayersTimeName !== 'AlleGebete' && (
@@ -75,7 +154,9 @@ export const EditPrayerTimes: React.FC<PrayerTimesProps> = ({
                                 <Text style={styles.prayersTimes}>
                                     {prayerTimes} Uhr
                                 </Text>
-                                <Text style={styles.selectedOptionText}>{selectedOption}</Text>
+                                <Text style={styles.selectedOptionText}>
+                                    {selectedOption || 'Noch nicht gesetzt'}
+                                </Text>
                             </>
                         )}
                     </View>
@@ -83,11 +164,13 @@ export const EditPrayerTimes: React.FC<PrayerTimesProps> = ({
             </TouchableOpacity>
         </View>
     );
-};
+}, (prevProps, nextProps) => {
+    return prevProps.formattedSelectedDate === nextProps.formattedSelectedDate &&
+        prevProps.prayersTimeName === nextProps.prayersTimeName &&
+        prevProps.globalUpdateTrigger === nextProps.globalUpdateTrigger;
+});
 
-export default memo(EditPrayerTimes);
-
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
     container: {
@@ -97,6 +180,12 @@ const styles = StyleSheet.create({
         width: width * 0.5,
         position: 'relative',
     } as ViewStyle,
+    containerHeader: {
+        textAlign: 'center',
+        fontSize: 28,
+        fontWeight: '400',
+        color: 'white',
+    } as TextStyle,
     imageContainer: {
         position: 'relative',
         width: '100%',
@@ -115,7 +204,7 @@ const styles = StyleSheet.create({
         left: 0,
         height: width * 0.4,
         width: width * 0.4,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)', // Halbtransparenter schwarzer Hintergrund
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
         alignItems: 'center',
         justifyContent: 'space-between',
     },

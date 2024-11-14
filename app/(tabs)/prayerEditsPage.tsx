@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { Text, View, StyleSheet, Dimensions, ImageStyle, Alert } from 'react-native';
-import { EditPrayerTimes } from '@/components/PrayerTimes/EditPrayerTimes';
+import { Text, View, StyleSheet, Dimensions, ImageStyle } from 'react-native';
+import { EditPrayerTimes, CACHED_IMAGES } from '@/components/PrayerTimes/EditPrayerTimes';
 import { DatePicker } from '@/components/DatePicker/DatePicker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -84,24 +84,23 @@ const DEFAULT_METHOD: MethodConfig = {
     name: "Diyanet İşleri Başkanlığı, Turkey",
 };
 
-const getImageForPrayer = (prayer: PrayerTime): number => {
-    const imageMap: Record<PrayerTime, number> = {
-        'AlleGebete': IMAGES.allPrayers,
-        'Morgen': IMAGES.morning,
-        'Mittag': IMAGES.noon,
-        'Nachmittag': IMAGES.afternoon,
-        'Abend': IMAGES.evening,
-        'Nacht': IMAGES.night,
+const getImageForPrayer = (prayer: PrayerTime): keyof typeof CACHED_IMAGES => {
+    const imageMap: Record<PrayerTime, keyof typeof CACHED_IMAGES> = {
+        'AlleGebete': 'allPrayers',
+        'Morgen': 'morning',
+        'Mittag': 'noon',
+        'Nachmittag': 'afternoon',
+        'Abend': 'evening',
+        'Nacht': 'night',
     };
     return imageMap[prayer];
 };
 
+
 const convertTimeToSeconds = (time: string): string => {
     const [hours, minutes] = time.split(':').map(Number);
-
     const formattedHours = hours.toString().padStart(2, '0');
     const formattedMinutes = minutes.toString().padStart(2, '0');
-
     return `${formattedHours}:${formattedMinutes}`;
 };
 
@@ -111,15 +110,18 @@ export default function PrayerEditsPage(): JSX.Element {
     const [prayerUpdate, setPrayerUpdate] = useState<PrayerUpdate>({ value: 0, timestamp: Date.now() });
     const [prayerTimes, setPrayerTimes] = useState<PrayerTimesType>(DEFAULT_PRAYER_TIMES);
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    const [formattedSelectedDate, setFormattedSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [selectedCountry, setSelectedCountry] = useState(DEFAULT_COUNTRY);
     const [selectedMethod, setSelectedMethod] = useState(DEFAULT_METHOD);
     const [isInitialized, setIsInitialized] = useState(false);
+    // Neuer State für globales Update
+    const [globalUpdateTrigger, setGlobalUpdateTrigger] = useState(0);
 
     const prevSelectedCountry = useRef<LocationConfig | null>(null);
     const prevSelectedMethod = useRef<MethodConfig | null>(null);
     const prevSelectedDate = useRef<Date | null>(null);
 
-
+    // Bestehende Logik bleibt gleich...
     const loadInitialData = useCallback(async () => {
         try {
             const [countryJson, methodJson] = await Promise.all([
@@ -157,6 +159,7 @@ export default function PrayerEditsPage(): JSX.Element {
             });
 
             const formattedDate = date.toISOString().split('T')[0];
+            setFormattedSelectedDate(formattedDate);
             const response = await fetch(
                 `${API_URL}/${formattedDate}?latitude=${selectedCountry.latitude}&longitude=${selectedCountry.longitude}&method=${selectedMethod.id}&timezonestring=Europe/Berlin`
             );
@@ -186,10 +189,15 @@ export default function PrayerEditsPage(): JSX.Element {
         }
     }, []);
 
+    // Modifizierter setPrayerUpdate Handler
+    const handlePrayerUpdate = useCallback((update: PrayerUpdate) => {
+        setPrayerUpdate(update);
+        setGlobalUpdateTrigger(prev => prev + 1);
+    }, []);
+
     useFocusEffect(
         useCallback(() => {
             void loadInitialData();
-
             return () => {
             };
         }, [])
@@ -208,9 +216,9 @@ export default function PrayerEditsPage(): JSX.Element {
                     prevSelectedMethod.current = selectedMethod;
                     prevSelectedDate.current = selectedDate;
                 }
-            }, 500); // 500ms Verzögerung
+            }, 500);
 
-        return () => clearTimeout(delayedFetchPrayerTimes);
+            return () => clearTimeout(delayedFetchPrayerTimes);
         }
     }, [selectedDate, selectedCountry, selectedMethod, isInitialized]);
 
@@ -230,7 +238,6 @@ export default function PrayerEditsPage(): JSX.Element {
         <View style={styles.container}>
             <Text style={styles.containerHeader}>Gebete Übersicht</Text>
             <DatePicker selectedCountry={selectedCountry} setDate={handleDateChange} />
-
             <View style={styles.prayersContainer}>
                 {PRAYER_TIMES.map((prayer) => (
                     <EditPrayerTimes
@@ -238,8 +245,9 @@ export default function PrayerEditsPage(): JSX.Element {
                         prayerTimes={prayerTimes[prayer]}
                         prayersTimeName={prayer}
                         prayersImage={getImageForPrayer(prayer)}
-                        setAllPrayerTriggerValue={prayerUpdate.value}
-                        setPrayerUpdate={prayer === "AlleGebete" ? setPrayerUpdate : undefined}
+                        setPrayerUpdate={prayer === "AlleGebete" ? handlePrayerUpdate : undefined}
+                        formattedSelectedDate={formattedSelectedDate}
+                        globalUpdateTrigger={globalUpdateTrigger}
                     />
                 ))}
             </View>

@@ -1,13 +1,15 @@
 // src/components/prayers/EditPrayerTimes.tsx
-import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {View, Text, Alert} from 'react-native';
 import styles from '@/components/PrayerTimes/CurrentPrayerTimes/styles/styles';
-import { PrayerProps, PrayerStatus } from '@/types/prayer.types';
+import { PrayerProps } from '@/types/prayer.types';
 import { usePrayerStatus } from '@/components/PrayerTimes/CurrentPrayerTimes/usePrayerStatus';
 import { useTimeCalculation } from '@/components/PrayerTimes/CurrentPrayerTimes/useTimeCalculation';
 import DatabaseService from '@/database/database';
 import { CurrentPrayer } from '@/components/PrayerTimes/CurrentPrayerTimes/CurrentPrayer';
 import { NextPrayer } from './CurrentPrayerTimes/NextPrayer';
+import {convertPrayerName} from "@/components/PrayerTimes/CurrentPrayerTimes/convertPrayerName";
+import {useFocusEffect} from "@react-navigation/native";
 
 const databaseService = new DatabaseService();
 
@@ -21,27 +23,43 @@ export const CurrentPrayerTimes: React.FC<PrayerProps> = ({
     const [currentDate] = useState<string>(
         currentAndNextPrayersProperties.currentDate.toISOString().split('T')[0]
     );
+    const prevSelectedOption = useRef<string | null>(null);
 
+    const initAndLoad = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            await databaseService.initializeDatabase();
+
+            // Konvertiere den Gebetsnamen
+            const prayerNameTrimmed = convertPrayerName(currentAndNextPrayersProperties.currentPrayerName);
+
+            // Lade den Status mit dem konvertierten Gebetsnamen
+            const status = await databaseService.getPrayerStatus(
+                currentDate,
+                prayerNameTrimmed
+            );
+
+            setSelectedOption(status as string);
+        } catch (error) {
+            console.error('Error initializing and loading prayer status:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [currentDate, currentAndNextPrayersProperties.currentPrayerName]); // Abhängigkeiten, um sicherzustellen, dass die Funktion aktualisiert wird, wenn sich die Daten ändern
+
+// Verwende initAndLoad in useEffect für die Initialisierung beim ersten Rendern und bei Änderungen von Abhängigkeiten
     useEffect(() => {
-        const initAndLoad = async () => {
-            try {
-                setIsLoading(true);
-                await databaseService.initializeDatabase();
-                const status = await databaseService.getPrayerStatus(
-                    currentDate,
-                    currentAndNextPrayersProperties.currentPrayerName
-                );
-                alert(status)
-                setSelectedOption(status as PrayerStatus);
-            } catch (error) {
-                console.error('Error initializing and loading prayer status:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
         initAndLoad();
-    }, [currentDate, currentAndNextPrayersProperties.currentPrayerName]);
+    }, [initAndLoad]);
+
+// Verwende initAndLoad auch in useFocusEffect, um die Daten beim erneuten Fokusieren des Tabs neu zu laden
+    useFocusEffect(
+        useCallback(() => {
+            initAndLoad();
+        }, [initAndLoad])
+    );
+
+
 
     if (isLoading) {
         return (

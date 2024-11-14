@@ -1,7 +1,14 @@
 import React, {useCallback, useState, useEffect} from 'react';
 import {Text, View, StyleSheet, Image} from 'react-native';
+import {convertPrayerName} from "@/components/PrayerTimes/CurrentPrayerTimes/convertPrayerName";
+import {useFocusEffect} from "@react-navigation/native";
+import DatabaseService from "@/database/database";
+
+const databaseService = new DatabaseService();
 
 export default function PrayerStatistics(): JSX.Element {
+    const [isLoading, setIsLoading] = useState(true);
+
     const images = {
         morgen: require('../../assets/images/morgenGebet.jpg'),
         mittag: require('../../assets/images/mittagGebet.jpg'),
@@ -9,6 +16,50 @@ export default function PrayerStatistics(): JSX.Element {
         abend: require('../../assets/images/abendGebet.jpg'),
         nacht: require('../../assets/images/nachtGebet.jpg'),
     };
+
+
+
+    const initAndLoad = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            await databaseService.initializeDatabase();
+
+
+            // Lade den Status mit dem konvertierten Gebetsnamen
+            const status = await databaseService.getPrayerStatus(
+                dateStart,
+                dateEnd
+            );
+
+            setSelectedOption(status as string);
+        } catch (error) {
+            console.error('Error initializing and loading prayer status:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []); // Abhängigkeiten, um sicherzustellen, dass die Funktion aktualisiert wird, wenn sich die Daten ändern
+
+// Verwende initAndLoad in useEffect für die Initialisierung beim ersten Rendern und bei Änderungen von Abhängigkeiten
+    useEffect(() => {
+        initAndLoad();
+    }, [initAndLoad]);
+
+// Verwende initAndLoad auch in useFocusEffect, um die Daten beim erneuten Fokusieren des Tabs neu zu laden
+    useFocusEffect(
+        useCallback(() => {
+            initAndLoad();
+        }, [initAndLoad])
+    );
+
+
+
+    if (isLoading) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.containerHeader}>Loading...</Text>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>

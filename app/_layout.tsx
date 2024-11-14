@@ -7,13 +7,13 @@ export default function RootLayout() {
             <Stack>
                 <Stack.Screen name="index" options={{ headerShown: false }} />
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                {/*<Stack.Screen*/}
-                {/*    name="+not-found"*/}
-                {/*    options={{*/}
-                {/*        title: "Oops Not Found",*/}
-                {/*        ...headerStyles*/}
-                {/*    }}*/}
-                {/*/>*/}
+                <Stack.Screen
+                    name="+not-found"
+                    options={{
+                        title: "Oops Not Found",
+                        ...headerStyles
+                    }}
+                />
             </Stack>
         </GestureHandlerRootView>
     );
