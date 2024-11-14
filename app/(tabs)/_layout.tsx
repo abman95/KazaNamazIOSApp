@@ -2,6 +2,8 @@ import { Stack, Tabs } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Image } from "react-native";
 import { ImageStyle } from "react-native";
+import { useEffect } from "react";
+import DatabaseService from "../../database/database"; // Pfad anpassen, falls nötig
 
 // Interface für die tabBarIcon Props
 interface TabBarIconProps {
@@ -18,6 +20,21 @@ type TabIconStyle = {
 }
 
 export default function TabsLayout(): JSX.Element {
+    // Datenbank-Initialisierung
+    useEffect(() => {
+        const initDb = async () => {
+            try {
+                const databaseService = new DatabaseService();
+                await databaseService.initializeDatabase();
+                console.log('Datenbank wurde erfolgreich initialisiert');
+            } catch (error) {
+                console.error('Fehler bei der Datenbankinitialisierung:', error);
+            }
+        };
+
+        initDb();
+    }, []);
+
     // Gemeinsame Style-Definition für die Tab-Icons
     const getTabIconStyle = (focused: boolean): TabIconStyle => ({
         tintColor: focused ? "white" : "#404040",

@@ -27,7 +27,7 @@ const OPTIONS = ['Nicht verrichtet', 'verrichtet', 'Abbrechen'] as const;
 const INITIAL_OPTION = OPTIONS[0];
 const CANCEL_INDEX = 2;
 
-export const PrayerTimes: React.FC<PrayerTimesProps> = ({
+export const EditPrayerTimes: React.FC<PrayerTimesProps> = ({
                                                             prayerTimes,
                                                             prayersTimeName,
                                                             prayersImage,
@@ -85,7 +85,7 @@ export const PrayerTimes: React.FC<PrayerTimesProps> = ({
     );
 };
 
-export default memo(PrayerTimes);
+export default memo(EditPrayerTimes);
 
 const { width, height } = Dimensions.get('window');
 

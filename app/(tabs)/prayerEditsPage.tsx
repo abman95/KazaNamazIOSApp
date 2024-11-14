@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { Text, View, StyleSheet, Dimensions, ImageStyle, Alert } from 'react-native';
-import { PrayerTimes } from '@/components/PrayerTimes/PrayerTimes';
+import { EditPrayerTimes } from '@/components/PrayerTimes/EditPrayerTimes';
 import { DatePicker } from '@/components/DatePicker/DatePicker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -233,7 +233,7 @@ export default function PrayerEditsPage(): JSX.Element {
 
             <View style={styles.prayersContainer}>
                 {PRAYER_TIMES.map((prayer) => (
-                    <PrayerTimes
+                    <EditPrayerTimes
                         key={`${prayer}-${prayerUpdate.timestamp}`}
                         prayerTimes={prayerTimes[prayer]}
                         prayersTimeName={prayer}

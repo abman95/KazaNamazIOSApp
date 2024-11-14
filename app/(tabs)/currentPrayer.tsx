@@ -28,6 +28,7 @@ interface PrayerTimeResult {
     nextPrayerTime: number;
     nextPrayerName: string;
     currentPrayerName: string;
+    currentDate: Date,
 }
 
 interface LocationConfig {
@@ -207,6 +208,7 @@ export default function PrayerEditsPage(): JSX.Element {
                 nextPrayerTime: 0,
                 nextPrayerName: 'Laden...',
                 currentPrayerName: 'Laden...',
+                currentDate: currentDate,
             };
         }
 
@@ -228,8 +230,9 @@ export default function PrayerEditsPage(): JSX.Element {
             nextPrayerTime: prayerTimeInSeconds[currentConfig.nextTimeKey],
             nextPrayerName: currentConfig.next.name,
             currentPrayerName: currentConfig.current.name,
+            currentDate: currentDate,
         };
-    }, [prayerTimes, timeInSeconds]);
+    }, [prayerTimes, timeInSeconds, currentDate]);
 
     useFocusEffect(
         useCallback(() => {
