@@ -79,7 +79,6 @@ export const CurrentPrayerTimes: React.FC<PrayerProps> = ({
                 currentPrayerProps={currentAndNextPrayersProperties}
             />
             <NextPrayer
-                nextPrayerImage={currentAndNextPrayersProperties.nextPrayerImage}
                 nextPrayerName={currentAndNextPrayersProperties.nextPrayerName}
                 nextPrayerTime={prayerTimes.nextPrayerTime}
             />

@@ -1,55 +1,111 @@
-import React, {useCallback, useState, useEffect} from 'react';
-import {Text, View, StyleSheet, Image} from 'react-native';
-import {convertPrayerName} from "@/components/PrayerTimes/CurrentPrayerTimes/convertPrayerName";
+import React, {useCallback, useState, useEffect, useMemo} from 'react';
+import {Text, View, StyleSheet, Image, Pressable} from 'react-native';
 import {useFocusEffect} from "@react-navigation/native";
 import DatabaseService from "@/database/database";
+import StatisticsDatePickerModal from "@/components/DatePicker/StatisticsDatePicker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const databaseService = new DatabaseService();
 
+const INITIAL_START_DATE = '1999-01-01';
+const PRAYER_TIMES = ['Morgen', 'Mittag', 'Nachmittag', 'Abend', 'Nacht'] as const;
+
+interface PrayerStatistic {
+    prayerTime: typeof PRAYER_TIMES[number];
+    count: number;
+}
+
 export default function PrayerStatistics(): JSX.Element {
     const [isLoading, setIsLoading] = useState(true);
-
-    const images = {
-        morgen: require('../../assets/images/morgenGebet.jpg'),
-        mittag: require('../../assets/images/mittagGebet.jpg'),
-        nachmittag: require('../../assets/images/nachmittagGebet.jpg'),
-        abend: require('../../assets/images/abendGebet.jpg'),
-        nacht: require('../../assets/images/nachtGebet.jpg'),
-    };
+    const [isStatisticModalVisible, setIsStatisticModalVisible] = useState<boolean>(false);
+    const [fromDateString, setFromDateString] = useState<string>(INITIAL_START_DATE);
+    const [toDateString, setToDateString] = useState<string>(new Date().toISOString().split('T')[0]);
 
 
 
-    const initAndLoad = useCallback(async () => {
+
+
+    const [unprayedData, setUnprayedData] = useState<PrayerStatistic[]>([]);
+    const [prayedData, setPrayedData] = useState<PrayerStatistic[]>([]);
+
+    const [maxPrayedCount, setMaxPrayedCount] = useState(0);
+
+
+
+
+
+
+    const initAndLoad = useCallback(async (fromDateString: string, toDateString: string) => {
         try {
             setIsLoading(true);
             await databaseService.initializeDatabase();
 
+            const [notPrayedStats, prayedStats] = await Promise.all([
+                databaseService.getNotPrayedDataStatistic(fromDateString, toDateString),
+                databaseService.getPrayedDataStatistic(fromDateString, toDateString)
+            ]);
 
-            // Lade den Status mit dem konvertierten Gebetsnamen
-            const status = await databaseService.getPrayerStatus(
-                dateStart,
-                dateEnd
-            );
-
-            setSelectedOption(status as string);
+            setUnprayedData(notPrayedStats);
+            setPrayedData(prayedStats);
         } catch (error) {
             console.error('Error initializing and loading prayer status:', error);
         } finally {
             setIsLoading(false);
         }
-    }, []); // Abhängigkeiten, um sicherzustellen, dass die Funktion aktualisiert wird, wenn sich die Daten ändern
+    }, []);
 
-// Verwende initAndLoad in useEffect für die Initialisierung beim ersten Rendern und bei Änderungen von Abhängigkeiten
     useEffect(() => {
-        initAndLoad();
-    }, [initAndLoad]);
+        const loadData = async () => {
+            await initAndLoad(fromDateString, toDateString);
+        };
 
-// Verwende initAndLoad auch in useFocusEffect, um die Daten beim erneuten Fokusieren des Tabs neu zu laden
+        void loadData();
+    }, [fromDateString, toDateString]);
+
+
     useFocusEffect(
         useCallback(() => {
-            initAndLoad();
-        }, [initAndLoad])
+            const loadData = async () => {
+                await initAndLoad(fromDateString, toDateString);
+            };
+
+            void loadData();
+        }, [fromDateString, toDateString])
     );
+
+
+    const onStatisticModalClose = useCallback(async () => {
+        setIsStatisticModalVisible(false);
+
+        const fromDateString = await AsyncStorage.getItem('FromDateString');
+        const toDateString = await AsyncStorage.getItem('ToDateString');
+
+        setFromDateString(fromDateString ? fromDateString.split('T')[0] : "1999-01-01");
+        setToDateString(toDateString ? toDateString.split('T')[0] : new Date().toISOString().split('T')[0]);
+    }, [])
+
+    const onStatisticModalOpen = useCallback(async () => {
+        setIsStatisticModalVisible(true);
+    }, [])
+
+
+    const maxTotalCount = useMemo(() => {
+        const maxPrayed = prayedData.reduce((max, curr) =>
+                curr.count > max.count ? curr : max,
+            { count: 0 } as PrayerStatistic
+        ).count;
+
+        const maxUnprayed = unprayedData.reduce((max, curr) =>
+                curr.count > max.count ? curr : max,
+            { count: 0 } as PrayerStatistic
+        ).count;
+
+        return maxPrayed + maxUnprayed;
+    }, [prayedData, unprayedData]);
+
+    const calculateProportionalBarWidth = useCallback((value: number) => {
+        return 290 * (value / maxTotalCount);
+    }, [maxTotalCount]);
 
 
 
@@ -63,11 +119,17 @@ export default function PrayerStatistics(): JSX.Element {
 
     return (
         <View style={styles.container}>
+            {isStatisticModalVisible && <StatisticsDatePickerModal onClose={onStatisticModalClose}
+                                                                   setFromDateString={setFromDateString}
+                                                                   setToDateString={setToDateString}
+                />}
             <Text style={styles.containerHeader}>Gebete Statistik</Text>
             <View style={ styles.statisticFilterContainer}>
-                <Text style={ styles.statisticFilterText}>Zeitraum: 20.03.2023 - 20.08.2024</Text>
+                <Text style={ styles.statisticFilterText}>Zeitraum: {fromDateString} - {toDateString}</Text>
                 <View style={styles.statisticFilterImageBackground}>
-                    <Image style={styles.statisticFilterImage} source={require('../../assets/images/filterIcon.png')}></Image>
+                    <Pressable onPress={onStatisticModalOpen}>
+                        <Image style={styles.statisticFilterImage} source={require('../../assets/images/filterIcon.png')}></Image>
+                    </Pressable>
                 </View>
             </View>
             <View style={styles.chartContainer}>
@@ -81,34 +143,43 @@ export default function PrayerStatistics(): JSX.Element {
                     </View>
                     <View style={styles.chartYLine}></View>
                     <View style={styles.chartYLinePrayerValue}>
-                        <View style={styles.chartYLineMorningValue}>
-                            <Text style={styles.prayedDaysText}>20T</Text>
+                        <View style={[styles.chartYLineMorningValue, { width: calculateProportionalBarWidth(prayedData[0] ? prayedData[0].count : 0) }]}>
+                            <Text style={styles.prayedDaysText}>{prayedData[0] ? prayedData[0].count : 0}</Text>
                             <View style={styles.chartYLineMorningTargetValue}>
-                                <Text style={styles.targetText}>20T</Text>
-                            </View></View>
-                        <View style={styles.chartYLineNoonValue}>
-                            <Text style={styles.prayedDaysText}>20T</Text>
+                                <Text style={styles.targetText}>{maxTotalCount}T</Text>
+                            </View>
+                        </View>
+                        <View style={[styles.chartYLineNoonValue, { width: calculateProportionalBarWidth(prayedData[1] ? prayedData[1].count : 0) }]}>
+                            <Text style={styles.prayedDaysText}>{prayedData[1] ? prayedData[1].count : 0}</Text>
                             <View style={styles.chartYLineNoonTargetValue}>
-                                <Text style={styles.targetText}>20T</Text>
-                            </View></View>
-                        <View style={styles.chartYLineAfternoonValue}>
-                            <Text style={styles.prayedDaysText}>20T</Text>
+                                <Text style={styles.targetText}>{maxTotalCount}T</Text>
+                            </View>
+                        </View>
+                        <View style={[styles.chartYLineAfternoonValue, { width: calculateProportionalBarWidth(prayedData[2] ? prayedData[2].count : 0) }]}>
+                            <Text style={styles.prayedDaysText}>{prayedData[2] ? prayedData[2].count : 0}</Text>
                             <View style={styles.chartYLineAfternoonTargetValue}>
-                                <Text style={styles.targetText}>20T</Text>
-                            </View></View>
-                        <View style={styles.chartYLineEveningValue}>
-                            <Text style={styles.prayedDaysText}>20T</Text>
+                                <Text style={styles.targetText}>{maxTotalCount}T</Text>
+                            </View>
+                        </View>
+                        <View style={[styles.chartYLineEveningValue, { width: calculateProportionalBarWidth(prayedData[3] ? prayedData[3].count : 0) }]}>
+                            <Text style={styles.prayedDaysText}>{prayedData[3] ? prayedData[3].count : 0}</Text>
                             <View style={styles.chartYLineEveningTargetValue}>
-                                <Text style={styles.targetText}>420T</Text>
-                            </View></View>
-                        <View style={styles.chartYLineNightValue}>
-                            <Text style={styles.prayedDaysText}>20T</Text>
+                                <Text style={styles.targetText}>{maxTotalCount}T</Text>
+                            </View>
+                        </View>
+                        <View style={[styles.chartYLineNightValue, { width: calculateProportionalBarWidth(prayedData[4] ? prayedData[4].count : 0) }]}>
+                            <Text style={styles.prayedDaysText}>{prayedData[4] ? prayedData[4].count : 0}</Text>
                             <View style={styles.chartYLineNightTargetValue}>
-                                <Text style={styles.targetText}>20T</Text>
-                            </View></View>
+                                <Text style={styles.targetText}>{maxTotalCount}T</Text>
+                            </View>
+                        </View>
                     </View>
                 </View>
                 <View style={styles.chartXLine}></View>
+            </View>
+            <View style={{flexDirection: "row"}}>
+                <Text style={{ color: "white", fontSize: 7, marginTop: -200 }}>Daten: {JSON.stringify(unprayedData, null, 2)}</Text>
+                <Text style={{ color: "white", fontSize: 7, marginTop: -200 }}>Daten: {JSON.stringify(prayedData, null, 2)}</Text>
             </View>
         </View>
     );

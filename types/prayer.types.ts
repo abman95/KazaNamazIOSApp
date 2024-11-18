@@ -15,8 +15,6 @@ export interface PrayerProperties {
     nextPrayerName: string;
     currentPrayerTime: number;
     nextPrayerTime: number;
-    currentPrayerImage: ImageSourcePropType;
-    nextPrayerImage: ImageSourcePropType;
     currentDate: Date;
 
 }

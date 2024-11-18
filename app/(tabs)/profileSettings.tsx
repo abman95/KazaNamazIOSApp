@@ -1,9 +1,18 @@
 import {Text, View, StyleSheet, Image, Pressable} from 'react-native';
-import {white} from "colorette";
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState} from 'react';
 import CountryPicker from "@/components/settings/CountryPicker";
 import PrayerCalculationMethod from "@/components/settings/PrayerCalculationMethod";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const settingsIcons = {
+    currentLocation: require('../../assets/images/currentLocation.png'),
+    pushNotification: require('../../assets/images/pushNotification.png'),
+    pushNotification3: require('../../assets/images/pushNotification3.png'),
+    prayerCall: require('../../assets/images/prayerCall.png'),
+    prayerTimeMethod: require('../../assets/images/prayerTimeMethod1.png'),
+    logOut: require('../../assets/images/logOut.png'),
+    deleteUser: require('../../assets/images/deleteUser.png')
+} as const;
 
 export default function profileSettings(): JSX.Element {
     const [isCountryModalVisible, setIsCountryModalVisible] = useState<boolean>(false);
@@ -19,40 +28,36 @@ export default function profileSettings(): JSX.Element {
         name: "Diyanet",
     });
 
-
-    // Initiales Laden der gespeicherten Daten
     useEffect(() => {
         const loadInitialData = async () => {
             try {
                 const jsonValue = await AsyncStorage.getItem('selectedCountry');
                 if (jsonValue !== null) {
                     const value = JSON.parse(jsonValue);
-                    setSelectedCountry(value); // Optional: Wenn Sie auch selectedCountry aktualisieren möchten
+                    setSelectedCountry(value);
                 }
             } catch (e) {
                 console.error('Error loading initial data:', e);
             }
         };
          loadInitialData();
-    }, []); // Leeres Array bedeutet, dass dieser Effect nur beim ersten Rendering ausgeführt wird
+    }, []);
 
-    // Initiales Laden der gespeicherten Daten
     useEffect(() => {
         const loadInitialData = async () => {
             try {
                 const jsonValue = await AsyncStorage.getItem('selectedMethod');
                 if (jsonValue !== null) {
                     const value = JSON.parse(jsonValue);
-                    setSelectedMethod(value); // Optional: Wenn Sie auch selectedCountry aktualisieren möchten
+                    setSelectedMethod(value);
                 }
             } catch (e) {
                 console.error('Error loading initial data:', e);
             }
         };
         loadInitialData();
-    }, []); // Leeres Array bedeutet, dass dieser Effect nur beim ersten Rendering ausgeführt wird
+    }, []);
 
-    // Speichern des selectedCountry
     useEffect(() => {
         const storeData = async () => {
             try {
@@ -65,7 +70,6 @@ export default function profileSettings(): JSX.Element {
         storeData();
     }, [selectedCountry]);
 
-    // Speichern des selectedMethod
     useEffect(() => {
         const storeData = async () => {
             try {
@@ -102,37 +106,37 @@ export default function profileSettings(): JSX.Element {
             <Text style={ styles.header }>Profil Einstellungen</Text>
             <View style={styles.listMainContainer}>
                 <View style={styles.listContainer}>
-                    <Image style={ styles.settingsIcons } source={require('../../assets/images/currentLocation.png')}/>
+                    <Image style={ styles.settingsIcons } source={settingsIcons.currentLocation}/>
                     <Text style={ styles.listElement1 }>Gewählter Standort</Text>
                     <Pressable style={ styles.pressableItemContainer } onPress={onCountryModalOpen}>
                         <Text style={ styles.pressableItemText }>{selectedCountry.name === "0" ? "Wähle eine Stadt aus" : selectedCountry.name}</Text>
                     </Pressable>
                 </View>
                 <View style={styles.listContainer}>
-                    <Image style={ styles.settingsIcons } source={require('../../assets/images/pushNotification.png')}/>
+                    <Image style={ styles.settingsIcons } source={settingsIcons.pushNotification}/>
                     <Text style={ styles.listElement2 }>Push Benachrichtung</Text>
                 </View>
                 <View style={styles.listContainer}>
-                    <Image style={ styles.settingsIcons } source={require('../../assets/images/pushNotification3.png')}/>
+                    <Image style={ styles.settingsIcons } source={settingsIcons.pushNotification3}/>
                     <Text style={ styles.listElement3 }>Zeit vor Push Benachrichtigung </Text>
                 </View>
                 <View style={styles.listContainer}>
-                    <Image style={ styles.settingsIcons } source={require('../../assets/images/prayerCall.png')}/>
+                    <Image style={ styles.settingsIcons } source={settingsIcons.prayerCall}/>
                     <Text style={ styles.listElement4 }>Ezan</Text>
                 </View>
                 <View style={styles.listContainer}>
-                    <Image style={ styles.settingsIcons } source={require('../../assets/images/prayerTimeMethod1.png')}/>
+                    <Image style={ styles.settingsIcons } source={settingsIcons.prayerTimeMethod}/>
                     <Text style={ styles.listElement5 }>Gebetszeiten Methoden</Text>
                     <Pressable style={ styles.pressableItemContainer } onPress={onMethodModalOpen}>
                         <Text style={ styles.pressableItemText }>{selectedMethod.name}</Text>
                     </Pressable>
                 </View>
                 <View style={styles.listContainer}>
-                    <Image style={ styles.settingsIcons } source={require('../../assets/images/logOut.png')}/>
+                    <Image style={ styles.settingsIcons } source={settingsIcons.logOut}/>
                     <Text style={ styles.listElement6 }>Abmelden</Text>
                 </View>
                 <View style={styles.listContainer}>
-                    <Image style={ styles.settingsIcons } source={require('../../assets/images/deleteUser.png')}/>
+                    <Image style={ styles.settingsIcons } source={settingsIcons.deleteUser}/>
                     <Text style={ styles.listElement7 }>Konto entfernen</Text>
                 </View>
             </View>

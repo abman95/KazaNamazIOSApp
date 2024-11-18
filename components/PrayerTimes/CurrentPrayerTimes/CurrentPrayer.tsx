@@ -1,15 +1,34 @@
-// src/components/prayers/CurrentPrayer.tsx
 import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import styles from '@/components/PrayerTimes/CurrentPrayerTimes/styles/styles';
-import { PrayerStatus, PrayerTimes, PrayerProperties } from '@/types/prayer.types';
+import { PrayerStatus, PrayerTimes } from '@/types/prayer.types';
+
+const IMAGES = {
+    Morgengebet: require('../../../assets/images/morgenGebet.jpg'),
+    Mittagsgebet: require('../../../assets/images/mittagGebet.jpg'),
+    Nachmittagsgebet: require('../../../assets/images/nachmittagGebet.jpg'),
+    Abendgebet: require('../../../assets/images/abendGebet.jpg'),
+    Nachtgebet: require('../../../assets/images/nachtGebet.jpg'),
+} as const;
+
+type PrayerImageKey = keyof typeof IMAGES;
+
+interface PrayerProperties {
+    currentPrayerName: string;
+    currentDate: Date;
+}
 
 interface CurrentPrayerProps {
-    selectedOption: PrayerStatus;
+    selectedOption: string;
     showPicker: (currentDate: Date, currentPrayerName: string) => Promise<void>;
     prayerTimes: PrayerTimes;
     currentPrayerProps: PrayerProperties;
+}
+
+const ICONS = {
+    edit: require('@/assets/images/edit1.png'),
+    arrow: require('@/assets/images/arrow.png'),
 }
 
 export const CurrentPrayer: React.FC<CurrentPrayerProps> = ({
@@ -21,7 +40,10 @@ export const CurrentPrayer: React.FC<CurrentPrayerProps> = ({
     <View style={styles.currentPrayerContainer}>
         <Text style={styles.containerHeader}>Aktuelle Gebetszeit:</Text>
         <Text style={styles.remainingPrayerTime}>{prayerTimes.remainingPrayerTime} verbleibend</Text>
-        <Image source={currentPrayerProps.currentPrayerImage} style={styles.prayersImage} />
+        <Image
+            source={IMAGES[currentPrayerProps.currentPrayerName as keyof typeof IMAGES]}
+            style={styles.prayersImage}
+        />
         <Text style={styles.prayersTimeText}>
             {currentPrayerProps.currentPrayerName}: {prayerTimes.currentPrayerTime} Uhr
         </Text>
@@ -31,9 +53,9 @@ export const CurrentPrayer: React.FC<CurrentPrayerProps> = ({
                 style={styles.optionSelector}
                 onPress={() => showPicker(currentPrayerProps.currentDate, currentPrayerProps.currentPrayerName)}
             >
-                <Image style={styles.editImage} source={require('@/assets/images/edit1.png')} />
+                <Image style={styles.editImage} source={ICONS.edit} />
             </TouchableOpacity>
         </LinearGradient>
-        <Image style={styles.arrowIcon} source={require('@/assets/images/arrow.png')} />
+        <Image style={styles.arrowIcon} source={ICONS.arrow} />
     </View>
 );

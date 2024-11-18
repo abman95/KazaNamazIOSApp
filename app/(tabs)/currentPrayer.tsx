@@ -11,7 +11,6 @@ type PrayerImagesType = Record<PrayerTimeKey, ImageSourcePropType>;
 
 interface PrayerInfo {
     name: string;
-    image: ImageSourcePropType;
 }
 
 interface PrayerConfigItem {
@@ -22,8 +21,6 @@ interface PrayerConfigItem {
 }
 
 interface PrayerTimeResult {
-    currentPrayerImage: ImageSourcePropType;
-    nextPrayerImage: ImageSourcePropType;
     currentPrayerTime: number;
     nextPrayerTime: number;
     nextPrayerName: string;
@@ -54,43 +51,34 @@ interface ApiResponse {
     };
 }
 
-// Constants
-const IMAGES: PrayerImagesType = {
-    morning: require('../../assets/images/morgenGebet.jpg'),
-    noon: require('../../assets/images/mittagGebet.jpg'),
-    afternoon: require('../../assets/images/nachmittagGebet.jpg'),
-    evening: require('../../assets/images/abendGebet.jpg'),
-    night: require('../../assets/images/nachtGebet.jpg'),
-} as const;
-
 const PRAYER_CONFIG: readonly PrayerConfigItem[] = [
     {
-        current: { name: 'Morgengebet', image: IMAGES.morning },
-        next: { name: 'Mittagsgebet', image: IMAGES.noon },
+        current: { name: 'Morgengebet'},
+        next: { name: 'Mittagsgebet'},
         timeKey: 'morning',
         nextTimeKey: 'noon'
     },
     {
-        current: { name: 'Mittagsgebet', image: IMAGES.noon },
-        next: { name: 'Nachmittagsgebet', image: IMAGES.afternoon },
+        current: { name: 'Mittagsgebet'},
+        next: { name: 'Nachmittagsgebet'},
         timeKey: 'noon',
         nextTimeKey: 'afternoon'
     },
     {
-        current: { name: 'Nachmittagsgebet', image: IMAGES.afternoon },
-        next: { name: 'Abendgebet', image: IMAGES.evening },
+        current: { name: 'Nachmittagsgebet'},
+        next: { name: 'Abendgebet'},
         timeKey: 'afternoon',
         nextTimeKey: 'evening'
     },
     {
-        current: { name: 'Abendgebet', image: IMAGES.evening },
-        next: { name: 'Nachtgebet', image: IMAGES.night },
+        current: { name: 'Abendgebet'},
+        next: { name: 'Nachtgebet'},
         timeKey: 'evening',
         nextTimeKey: 'night'
     },
     {
-        current: { name: 'Nachtgebet', image: IMAGES.night },
-        next: { name: 'Morgengebet', image: IMAGES.morning },
+        current: { name: 'Nachtgebet'},
+        next: { name: 'Morgengebet'},
         timeKey: 'night',
         nextTimeKey: 'morning'
     },
@@ -202,8 +190,6 @@ export default function PrayerEditsPage(): JSX.Element {
     const getPrayerTime = useCallback((): PrayerTimeResult => {
         if (Object.values(prayerTimes).some(time => time === "0")) {
             return {
-                currentPrayerImage: IMAGES.morning,
-                nextPrayerImage: IMAGES.noon,
                 currentPrayerTime: 0,
                 nextPrayerTime: 0,
                 nextPrayerName: 'Laden...',
@@ -224,8 +210,6 @@ export default function PrayerEditsPage(): JSX.Element {
         }) ?? PRAYER_CONFIG[PRAYER_CONFIG.length - 1];
 
         return {
-            currentPrayerImage: currentConfig.current.image,
-            nextPrayerImage: currentConfig.next.image,
             currentPrayerTime: prayerTimeInSeconds[currentConfig.timeKey],
             nextPrayerTime: prayerTimeInSeconds[currentConfig.nextTimeKey],
             nextPrayerName: currentConfig.next.name,

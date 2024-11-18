@@ -14,7 +14,7 @@ interface KazaPrayerStatus {
 }
 
 interface PrayerStatistic {
-    prayerTime: string;
+    prayerTime: "Morgen" | "Mittag" | "Nachmittag" | "Abend" | "Nacht";
     count: number;
 }
 
@@ -97,7 +97,7 @@ export default class DatabaseService {
         }
     }
 
-    async getDataPrayerStatistic(dateStart: string, dateEnd: string): Promise<PrayerStatistic[]> {
+    async getNotPrayedDataStatistic(dateStart: string, dateEnd: string): Promise<PrayerStatistic[]> {
         if (!this.db) throw new Error('Database not initialized');
 
         try {
@@ -107,7 +107,33 @@ export default class DatabaseService {
                     COUNT(*) as count
                 FROM KazaNamaz 
                 WHERE date BETWEEN ? AND ?
-                    AND status = 'erledigt'
+                AND status = 'offen'
+                GROUP BY prayerTime
+                ORDER BY CASE prayerTime 
+                    WHEN 'Morgen' THEN 1 
+                    WHEN 'Mittag' THEN 2 
+                    WHEN 'Nachmittag' THEN 3 
+                    WHEN 'Abend' THEN 4 
+                    WHEN 'Nacht' THEN 5 
+                END
+            `, [dateStart, dateEnd]);
+        } catch (error) {
+            console.error('Error getting prayer statistics:', error);
+            throw error;
+        }
+    }
+
+    async getPrayedDataStatistic(dateStart: string, dateEnd: string): Promise<PrayerStatistic[]> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        try {
+            return await this.db.getAllAsync<PrayerStatistic>(`
+                SELECT 
+                    prayerTime,
+                    COUNT(*) as count
+                FROM KazaNamaz 
+                WHERE date BETWEEN ? AND ?
+                AND status = 'erledigt'
                 GROUP BY prayerTime
                 ORDER BY CASE prayerTime 
                     WHEN 'Morgen' THEN 1 

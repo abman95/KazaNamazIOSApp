@@ -1,23 +1,18 @@
 import React, {useEffect, useCallback, memo, useState} from 'react';
 import {useFocusEffect} from "@react-navigation/native";
 import {
-    ViewStyle,
-    ImageStyle,
     TextStyle,
     Text,
     View,
     StyleSheet,
     ActionSheetIOS,
     TouchableOpacity,
-    Image,
-    type ImageSourcePropType,
     Dimensions,
 } from 'react-native';
 import DatabaseService from "@/database/database";
 
 const databaseService = new DatabaseService();
 
-// Vorab geladene und zwischengespeicherte Bilder
 export const CACHED_IMAGES = {
     allPrayers: require('../../assets/images/allPrayerTimesImageCube.png'),
     morning: require('../../assets/images/morgenGebet.jpg'),
@@ -68,13 +63,13 @@ export const EditPrayerTimes = memo(function EditPrayerTimes({
 
     useEffect(() => {
         if (globalUpdateTrigger !== undefined) {
-            initAndLoad();
+            void initAndLoad();
         }
     }, [globalUpdateTrigger, initAndLoad]);
 
     useFocusEffect(
         useCallback(() => {
-            initAndLoad();
+            void initAndLoad();
         }, [initAndLoad])
     );
 
@@ -126,8 +121,8 @@ export const EditPrayerTimes = memo(function EditPrayerTimes({
 
     if (isLoading) {
         return (
-            <View style={styles.container}>
-                <Text style={styles.containerHeader}>Loading...</Text>
+            <View>
+                <Text>Loading...</Text>
             </View>
         );
     }
@@ -136,19 +131,14 @@ export const EditPrayerTimes = memo(function EditPrayerTimes({
     const imageSource = CACHED_IMAGES[prayersImage];
 
     return (
-        <View style={styles.container}>
+        <View>
             <TouchableOpacity
                 onPress={() => handlePress({ formattedSelectedDate, prayersTimeName })}
                 activeOpacity={0.7}
             >
-                <View style={styles.imageContainer}>
-                    <Image
-                        source={imageSource}
-                        style={styles.prayersImage}
-                        defaultSource={imageSource}
-                    />
+                <View>
                     <View style={styles.overlayContainer}>
-                        <Text style={styles.prayersTimeName}>{prayersTimeName}</Text>
+                        {/*<Text style={styles.prayersTimeName}>{prayersTimeName}</Text>*/}
                         {prayersTimeName !== 'AlleGebete' && (
                             <>
                                 <Text style={styles.prayersTimes}>
@@ -173,40 +163,17 @@ export const EditPrayerTimes = memo(function EditPrayerTimes({
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
-    container: {
-        paddingLeft: 20,
-        paddingRight: 20,
-        height: width * 0.5,
-        width: width * 0.5,
-        position: 'relative',
-    } as ViewStyle,
-    containerHeader: {
-        textAlign: 'center',
-        fontSize: 28,
-        fontWeight: '400',
-        color: 'white',
-    } as TextStyle,
-    imageContainer: {
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-    },
-    prayersImage: {
-        height: width * 0.4,
-        width: width * 0.4,
-        borderRadius: 10,
-    } as ImageStyle,
     overlayContainer: {
-        padding: 5,
-        borderRadius: 10,
-        position: 'absolute',
+        position: "absolute",
+        textAlign: "center",
+        // backgroundColor: "grey",
         top: 0,
-        left: 0,
+        right: 20,
+        borderRadius: 10,
         height: width * 0.4,
         width: width * 0.4,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
     },
     prayersTimeName: {
         fontSize: 20,
@@ -219,9 +186,13 @@ const styles = StyleSheet.create({
         color: 'white',
     },
     selectedOptionText: {
+        top: width * 0.32,
+        position: 'absolute',
         color: 'white',
         fontSize: 15,
         fontWeight: '100',
-        textAlign: 'center',
+        height: width * 0.4,
+        width: width * 0.4,
+        textAlign: "center",
     } as TextStyle,
 });

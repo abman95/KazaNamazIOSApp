@@ -4,6 +4,7 @@ import { EditPrayerTimes, CACHED_IMAGES } from '@/components/PrayerTimes/EditPra
 import { DatePicker } from '@/components/DatePicker/DatePicker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import {EditPrayerTimesImages} from "@/components/PrayerTimes/EditPrayerTimes/EditPrayerTimesImages";
 
 // Constants
 const PRAYER_TIMES = ['AlleGebete', 'Morgen', 'Mittag', 'Nachmittag', 'Abend', 'Nacht'] as const;
@@ -240,6 +241,11 @@ export default function PrayerEditsPage(): JSX.Element {
             <DatePicker selectedCountry={selectedCountry} setDate={handleDateChange} />
             <View style={styles.prayersContainer}>
                 {PRAYER_TIMES.map((prayer) => (
+                    <>
+                    <EditPrayerTimesImages
+                        key = {prayer}
+                        prayersImage={prayer}
+                    />
                     <EditPrayerTimes
                         key={`${prayer}-${prayerUpdate.timestamp}`}
                         prayerTimes={prayerTimes[prayer]}
@@ -249,13 +255,14 @@ export default function PrayerEditsPage(): JSX.Element {
                         formattedSelectedDate={formattedSelectedDate}
                         globalUpdateTrigger={globalUpdateTrigger}
                     />
+                    </>
                 ))}
             </View>
         </View>
     );
 }
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
     container: {
@@ -270,15 +277,11 @@ const styles = StyleSheet.create({
         color: 'white',
     },
     prayersContainer: {
-        marginTop: 30,
+        height: height,
         width: width,
+        marginTop: 30,
         display: 'flex',
         flexDirection: 'row',
         flexWrap: 'wrap',
     },
-    prayersImage: {
-        width: width * 0.4,
-        height: width * 0.4,
-        borderRadius: 10,
-    } as ImageStyle,
 });
