@@ -46,6 +46,6 @@ const styles = StyleSheet.create({
     locationText: {
         color: "white",
         fontSize: 17,
-        fontWeight: "400",
+        fontWeight: "300",
     },
 });

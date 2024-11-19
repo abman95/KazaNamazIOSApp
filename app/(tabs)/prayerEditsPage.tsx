@@ -272,8 +272,8 @@ const styles = StyleSheet.create({
     containerHeader: {
         marginTop: 70,
         textAlign: 'center',
-        fontSize: 30,
-        fontWeight: 'bold',
+        fontSize: 28,
+        fontWeight: '400',
         color: 'white',
     },
     prayersContainer: {

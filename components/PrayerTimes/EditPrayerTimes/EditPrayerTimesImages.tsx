@@ -27,7 +27,6 @@ interface PrayerTimesProps {
 }
 
 export const EditPrayerTimesImages = ({ prayersImage }: PrayerTimesProps): JSX.Element => {
-    // Verwende zwischengespeichertes Bild
     const imageSource = CACHED_IMAGES[prayersImage];
 
     return (
@@ -86,7 +85,7 @@ const styles = StyleSheet.create({
     },
     prayersTimeName: {
         fontSize: 20,
-        fontWeight: '300',
+        fontWeight: '200',
         color: 'white',
     },
     prayersTimes: {

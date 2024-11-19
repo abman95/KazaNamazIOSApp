@@ -50,7 +50,7 @@ export default class DatabaseService {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 date TEXT NOT NULL,
                 prayerTime TEXT NOT NULL,
-                status TEXT NOT NULL DEFAULT 'offen'
+                status TEXT NOT NULL DEFAULT 'Kein Eintrag'
             )
         `);
     }
@@ -59,12 +59,29 @@ export default class DatabaseService {
         if (!this.db) throw new Error('Database not initialized');
 
         try {
-            const existing = await this.db.getAllAsync<KazaNamaz>(
+            const existingEntries = await this.db.getAllAsync<KazaNamaz>(
+                'SELECT * FROM KazaNamaz WHERE date = ?',
+                [date]
+            );
+
+            if (existingEntries.length === 0) {
+                const prayerTimes = ["Morgen", "Mittag", "Nachmittag", "Abend", "Nacht"];
+                const initialStatus = "offen";
+
+                for (const time of prayerTimes) {
+                    await this.db.runAsync(
+                        'INSERT INTO KazaNamaz (date, prayerTime, status) VALUES (?, ?, ?)',
+                        [date, time, initialStatus]
+                    );
+                }
+            }
+
+            const existingPrayer = await this.db.getAllAsync<KazaNamaz>(
                 'SELECT * FROM KazaNamaz WHERE date = ? AND prayerTime = ?',
                 [date, prayerTime]
             );
 
-            if (existing.length > 0) {
+            if (existingPrayer.length > 0) {
                 await this.db.runAsync(
                     'UPDATE KazaNamaz SET status = ? WHERE date = ? AND prayerTime = ?',
                     [status, date, prayerTime]
@@ -76,10 +93,11 @@ export default class DatabaseService {
                 );
             }
         } catch (error) {
-            console.error('Error adding/updating prayer status:', error);
+            console.error('Error handling prayer data:', error);
             throw error;
         }
     }
+
 
     async getPrayerStatus(date: string, prayerTime: string): Promise<string> {
         if (!this.db) throw new Error('Database not initialized');
@@ -90,7 +108,7 @@ export default class DatabaseService {
                 [date, prayerTime]
             );
 
-            return result.length > 0 ? result[0].status : 'offen';
+            return result.length > 0 ? result[0].status : 'Kein Eintrag';
         } catch (error) {
             console.error('Error getting prayer status:', error);
             throw error;

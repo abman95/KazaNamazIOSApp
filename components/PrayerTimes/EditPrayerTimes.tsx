@@ -45,6 +45,7 @@ export const EditPrayerTimes = memo(function EditPrayerTimes({
     const [selectedOption, setSelectedOption] = useState<string>();
     const [isLoading, setIsLoading] = useState(true);
 
+
     const initAndLoad = useCallback(async () => {
         try {
             setIsLoading(true);
@@ -127,9 +128,7 @@ export const EditPrayerTimes = memo(function EditPrayerTimes({
         );
     }
 
-    // Verwende zwischengespeichertes Bild
     const imageSource = CACHED_IMAGES[prayersImage];
-
     return (
         <View>
             <TouchableOpacity
@@ -138,17 +137,23 @@ export const EditPrayerTimes = memo(function EditPrayerTimes({
             >
                 <View>
                     <View style={styles.overlayContainer}>
-                        {/*<Text style={styles.prayersTimeName}>{prayersTimeName}</Text>*/}
-                        {prayersTimeName !== 'AlleGebete' && (
+
                             <>
+                            {prayersTimeName !== 'AlleGebete' && (
                                 <Text style={styles.prayersTimes}>
                                     {prayerTimes} Uhr
                                 </Text>
+                            )}
                                 <Text style={styles.selectedOptionText}>
-                                    {selectedOption || 'Noch nicht gesetzt'}
+                                    {prayersTimeName === 'AlleGebete'
+                                        ? ''
+                                        : selectedOption
+                                            ? selectedOption
+                                            : 'Kein Eintrag'}
                                 </Text>
+
                             </>
-                        )}
+
                     </View>
                 </View>
             </TouchableOpacity>
@@ -166,7 +171,6 @@ const styles = StyleSheet.create({
     overlayContainer: {
         position: "absolute",
         textAlign: "center",
-        // backgroundColor: "grey",
         top: 0,
         right: 20,
         borderRadius: 10,
@@ -175,24 +179,23 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    prayersTimeName: {
-        fontSize: 20,
-        fontWeight: '300',
-        color: 'white',
-    },
     prayersTimes: {
         fontSize: 27,
         fontWeight: '100',
         color: 'white',
     },
     selectedOptionText: {
-        top: width * 0.32,
+        textAlignVertical: "bottom",
+        textAlign: "center",
+        marginHorizontal: 10,
+        paddingTop: 130,
+        top: 0,
         position: 'absolute',
         color: 'white',
-        fontSize: 15,
+        fontSize: 18,
         fontWeight: '100',
         height: width * 0.4,
         width: width * 0.4,
-        textAlign: "center",
+
     } as TextStyle,
 });

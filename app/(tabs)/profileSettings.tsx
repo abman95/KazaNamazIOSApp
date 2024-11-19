@@ -154,8 +154,8 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         marginTop: 70,
         color: "white",
-        fontSize: 25,
-        fontWeight: "bold",
+        fontSize: 28,
+        fontWeight: '400',
     },
     listMainContainer: {
         backgroundColor: "#201f1d",
