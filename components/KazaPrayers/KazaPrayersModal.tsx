@@ -18,28 +18,11 @@ type KazaNamazModalProps = {
 export default function KazaPrayersModal({ onClose, maxTotalCount}: KazaNamazModalProps) {
     const [internalFromDate, setInternalFromDate] = useState<Date>(new Date());
     const [internalToDate, setInternalToDate] = useState<Date>(new Date());
-    const [count, setCount] = useState(0);
+    const [isfollowUpPrayersButtonCallback, setIsfollowUpPrayersButtonCallback] = useState(false);
 
     const dateConverter = useCallback((selectedDate: Date) => {
         return selectedDate.toISOString().split('T')[0];
     }, []);
-
-    // const saveFromDate = useCallback((_event: DateTimePickerEvent, selectedDate?: Date) => {
-    //     const currentFromDate: Date = selectedDate || internalFromDate;
-    //     setInternalFromDate(currentFromDate);
-    // }, [])
-    //
-    // const saveToDate = useCallback((_event: DateTimePickerEvent, selectedDate?: Date) => {
-    //     const currentToDate: Date = selectedDate || internalToDate;
-    //     setInternalToDate(currentToDate);
-    // }, [])
-    //
-    // const handlePressSaveDates = useCallback(async () => {
-    //     await AsyncStorage.setItem('FromDateString', internalFromDate.toISOString());
-    //     await AsyncStorage.setItem('ToDateString', internalToDate.toISOString());
-    //     alert(`Eingabe wurde gespeichert. ${dateConverter(internalFromDate)} bis ${dateConverter(internalToDate)}`);
-    //     onClose()
-    // }, [internalFromDate, internalToDate])
 
     useFocusEffect(
         useCallback(() => {
@@ -74,10 +57,11 @@ export default function KazaPrayersModal({ onClose, maxTotalCount}: KazaNamazMod
                                 prayersTimeName={prayer}
                                 maxTotalCount={maxTotalCount}
                                 internalFromDate={internalFromDate}
-                                internalToDate={internalToDate}
+                                isfollowUpPrayersButtonCallback={isfollowUpPrayersButtonCallback}
+                                setIsfollowUpPrayersButtonCallback={setIsfollowUpPrayersButtonCallback}
                             ></KazaPrayersModalChildComponent>
                         ))}
-                    <Pressable style={({ pressed }) => [
+                    <Pressable onPress={() => setIsfollowUpPrayersButtonCallback(true)}  style={({ pressed }) => [
                         pressed ? styles.saveDatesPressed : styles.saveDates
                     ]}
                                // onPress={handlePressSaveDates}

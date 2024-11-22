@@ -33,9 +33,6 @@ export const usePrayerStatus = () => {
                 status
             );
 
-            alert('Prayer status saved successfully');
-            console.log('Prayer status saved successfully');
-
             // Verzögerung von 0,5 Sekunden (500 ms), bevor der neue Status abgerufen wird
             setTimeout(async () => {
                 const status = await databaseService.getPrayerStatus(

@@ -74,7 +74,6 @@ const usePrayerStatus = () => {
                 prayerName,
                 status === 'verrichtet' ? 'erledigt' : 'offen'
             );
-            alert("Prayer status saved succesfully");
             console.log('Prayer status saved successfully');
         } catch (error) {
             console.error('Error saving prayer status:', error);

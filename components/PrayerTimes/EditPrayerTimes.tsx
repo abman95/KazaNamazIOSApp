@@ -89,14 +89,15 @@ export const EditPrayerTimes = memo(function EditPrayerTimes({
         );
 
         const addNamaz = useCallback(async (currentDate: string, prayerName: string, status: string) => {
-            alert(`${currentDate} : ${prayerName}`)
             try {
+                alert(currentDate)
                 await databaseService.initializeDatabase();
 
                 if (prayerName === "AlleGebete") {
                     const prayerTypes = ["Morgen", "Mittag", "Nachmittag", "Abend", "Nacht"];
                     await Promise.all(prayerTypes.map(type =>
-                        databaseService.addKazaNamaz(currentDate, type, status)
+
+                        databaseService.addKazaNamaz(currentDate, type, status, true)
                     ));
 
                     setSelectedOption(status);

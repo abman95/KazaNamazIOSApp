@@ -232,7 +232,6 @@ export default function PrayerEditsPage(): JSX.Element {
     }, [selectedDate, selectedCountry, selectedMethod, isInitialized]);
 
     const handleDateChange = useCallback((newDate: Date): void => {
-        alert(newDate)
         setSelectedDate(newDate);
     }, []);
 

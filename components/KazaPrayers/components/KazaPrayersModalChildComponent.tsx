@@ -1,5 +1,5 @@
 import {Text, StyleSheet, View, Pressable, Dimensions} from "react-native";
-import {useCallback, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useFocusEffect} from "@react-navigation/native";
 import {string} from "prop-types";
@@ -11,42 +11,64 @@ type PrayerTimeNameProps= {
     prayersTimeName: string;
     maxTotalCount: number;
     internalFromDate: Date;
+    isfollowUpPrayersButtonCallback: boolean;
+    setIsfollowUpPrayersButtonCallback?: (value: boolean) => void;
 }
 
 
-export default function KazaPrayersModalChildComponent({prayersTimeName, maxTotalCount, internalFromDate}: PrayerTimeNameProps) {
+export default function KazaPrayersModalChildComponent({prayersTimeName, maxTotalCount, internalFromDate, isfollowUpPrayersButtonCallback, setIsfollowUpPrayersButtonCallback} : PrayerTimeNameProps) {
     const [count, setCount] = useState(0);
 
-    const addNamaz = useCallback(async (internalFromDate: Date, prayersTimeName: string, maxTotalCount: number) => {
+
+    const addNamaz = useCallback(async (internalFromDate: Date, prayersTimeName: string, count: number) => {
+        if (count === 0) return;
+
         try {
             await databaseService.initializeDatabase();
-
-            const daysToAdd = [...Array(maxTotalCount).keys()];
 
             const formatDate = (date: Date): string => {
                 const year = date.getFullYear();
                 const month = String(date.getMonth() + 1).padStart(2, '0');
                 const day = String(date.getDate()).padStart(2, '0');
-
                 return `${year}-${month}-${day}`;
             };
 
-            await Promise.all(daysToAdd.map(dayOffset => {
-                const currentDate = new Date(internalFromDate);
-                currentDate.setDate(currentDate.getDate() + dayOffset);
-                currentDate.setHours(0, 0, 0, 0);
+            let array: string[] = [];
+            let currentDate = new Date(internalFromDate);
+
+
+            while (array.length < count) {
+                await databaseService.initializeDatabase();
                 const formattedDate = formatDate(currentDate);
 
-                databaseService.addKazaNamaz(formattedDate, prayersTimeName, "erledigt");
-                alert(`Eintrag wurde erfolgreich gespeichert`);
-                // alert(formattedDate);
-            }));
+                const result = await databaseService.addKazaNamazFilterPrayerNotDone(formattedDate, prayersTimeName, "erledigt");
+
+                if (result) {
+                    array.push(result);
+                    console.log(array)
+                }
+
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
 
         } catch (error) {
             console.error('Error saving prayer status:', error);
             throw error;
         }
     }, []);
+
+    useEffect(() => {
+        if (isfollowUpPrayersButtonCallback) {
+            followUpPrayersButtonCallback();
+        }
+    }, [isfollowUpPrayersButtonCallback]);
+
+    const followUpPrayersButtonCallback = useCallback(() => {
+        void addNamaz(internalFromDate, prayersTimeName, count)
+        if (setIsfollowUpPrayersButtonCallback) {
+            setIsfollowUpPrayersButtonCallback(false);
+        }
+    }, [internalFromDate, prayersTimeName, count, setIsfollowUpPrayersButtonCallback]);
 
     return (
                     <View style={{flexDirection: "column", justifyContent: "space-between"}}>
@@ -70,7 +92,7 @@ export default function KazaPrayersModalChildComponent({prayersTimeName, maxTota
                             <Pressable style={({ pressed }) => [
                                 pressed ? styles.kazaPrayersSaveButtonContainerPressed : styles.kazaPrayersSaveButtonContainer
                             ]}
-                                        onPress={() => addNamaz(internalFromDate, prayersTimeName, maxTotalCount)}
+                                        onPress={() => addNamaz(internalFromDate, prayersTimeName, count)}
                             >
                                 <Text style={ styles.kazaPrayersSaveButtonText }>nachgeholt</Text>
                             </Pressable>

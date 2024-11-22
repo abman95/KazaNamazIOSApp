@@ -1,5 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import * as FileSystem from 'expo-file-system';
+import {Alert} from "react-native";
 
 interface KazaNamaz {
     id: number;
@@ -55,43 +56,107 @@ export default class DatabaseService {
         `);
     }
 
-    async addKazaNamaz(date: string, prayerTime: string, status: string): Promise<void> {
+    async addKazaNamaz(
+        date: string,
+        prayerTime: string,
+        status: string,
+        alleGebete: boolean = false
+    ): Promise<void> {
+        if (!this.db) {
+            throw new Error('Database not initialized');
+        }
+
+        try {
+            if (!alleGebete) {
+                await this.ensureInitialDatabaseEntries(date, prayerTime, status);
+            }
+
+            await this.upsertPrayerEntry(date, prayerTime, status);
+        } catch (error) {
+            console.error('Error handling prayer data:', error);
+            throw error;
+        }
+    }
+
+    private async ensureInitialDatabaseEntries(date: string, prayerTime: string, status: string,): Promise<void> {
+        if (!this.db) throw new Error('Database not initialized');
+        const existingEntries = await this.db.getAllAsync<KazaNamaz>(
+            'SELECT * FROM KazaNamaz WHERE date = ?',
+            [date]
+        );
+
+        if (existingEntries.length === 0) {
+            const prayerTimes = ["Morgen", "Mittag", "Nachmittag", "Abend", "Nacht"];
+            const initialStatus = "offen";
+
+            for (const time of prayerTimes) {
+                await this.db.runAsync(
+                    'INSERT INTO KazaNamaz (date, prayerTime, status) VALUES (?, ?, ?)',
+                    [date, time, initialStatus]
+                );
+            }
+        }
+
+        const existingPrayer = await this.db.getAllAsync<KazaNamaz>(
+            'SELECT * FROM KazaNamaz WHERE date = ? AND prayerTime = ?',
+            [date, prayerTime]
+        );
+
+        if (existingPrayer.length > 0) {
+            await this.db.runAsync(
+                'UPDATE KazaNamaz SET status = ? WHERE date = ? AND prayerTime = ?',
+                [status, date, prayerTime]
+            );
+        } else {
+            await this.db.runAsync(
+                'INSERT INTO KazaNamaz (date, prayerTime, status) VALUES (?, ?, ?)',
+                [date, prayerTime, status]
+            );
+        }
+    }
+
+    private async upsertPrayerEntry(
+        date: string,
+        prayerTime: string,
+        status: string
+    ): Promise<void> {
+        if (!this.db) throw new Error('Database not initialized');
+        const existingPrayer = await this.db.getAllAsync<KazaNamaz>(
+            'SELECT * FROM KazaNamaz WHERE date = ? AND prayerTime = ?',
+            [date, prayerTime]
+        );
+
+        if (existingPrayer.length > 0) {
+            await this.db.runAsync(
+                'UPDATE KazaNamaz SET status = ? WHERE date = ? AND prayerTime = ?',
+                [status, date, prayerTime]
+            );
+        } else {
+            await this.db.runAsync(
+                'INSERT INTO KazaNamaz (date, prayerTime, status) VALUES (?, ?, ?)',
+                [date, prayerTime, status]
+            );
+        }
+    }
+
+    async addKazaNamazFilterPrayerNotDone(date: string, prayerTime: string, status: string): Promise<string | null> {
         if (!this.db) throw new Error('Database not initialized');
 
         try {
             const existingEntries = await this.db.getAllAsync<KazaNamaz>(
-                'SELECT * FROM KazaNamaz WHERE date = ?',
-                [date]
-            );
-
-            if (existingEntries.length === 0) {
-                const prayerTimes = ["Morgen", "Mittag", "Nachmittag", "Abend", "Nacht"];
-                const initialStatus = "offen";
-
-                for (const time of prayerTimes) {
-                    await this.db.runAsync(
-                        'INSERT INTO KazaNamaz (date, prayerTime, status) VALUES (?, ?, ?)',
-                        [date, time, initialStatus]
-                    );
-                }
-            }
-
-            const existingPrayer = await this.db.getAllAsync<KazaNamaz>(
-                'SELECT * FROM KazaNamaz WHERE date = ? AND prayerTime = ?',
+                "SELECT * FROM KazaNamaz WHERE date = ? AND prayerTime = ? AND status = 'offen' ORDER BY date ASC LIMIT 1",
                 [date, prayerTime]
             );
 
-            if (existingPrayer.length > 0) {
+            if (existingEntries.length > 0) {
                 await this.db.runAsync(
                     'UPDATE KazaNamaz SET status = ? WHERE date = ? AND prayerTime = ?',
-                    [status, date, prayerTime]
+                    [status, existingEntries[0].date, prayerTime]
                 );
-            } else {
-                await this.db.runAsync(
-                    'INSERT INTO KazaNamaz (date, prayerTime, status) VALUES (?, ?, ?)',
-                    [date, prayerTime, status]
-                );
+                return date;
             }
+
+            return null;
         } catch (error) {
             console.error('Error handling prayer data:', error);
             throw error;
