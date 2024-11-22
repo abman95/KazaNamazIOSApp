@@ -12,9 +12,10 @@ const PRAYER_TIMES = ['Morgen', 'Mittag', 'Nachmittag', 'Abend', 'Nacht'] as con
 
 type KazaNamazModalProps = {
     onClose: () => void;
+    maxTotalCount: number;
 };
 
-export default function KazaPrayersModal({ onClose}: KazaNamazModalProps) {
+export default function KazaPrayersModal({ onClose, maxTotalCount}: KazaNamazModalProps) {
     const [internalFromDate, setInternalFromDate] = useState<Date>(new Date());
     const [internalToDate, setInternalToDate] = useState<Date>(new Date());
     const [count, setCount] = useState(0);
@@ -60,7 +61,7 @@ export default function KazaPrayersModal({ onClose}: KazaNamazModalProps) {
         <Modal animationType="fade" transparent={true}>
             <View style={styles.modalContent}>
                 <View style={styles.titleContainer}>
-                    <Text style={styles.title}>Welche Gebete hast du nachgeholt?</Text>
+                    <Text style={styles.title}>Welche Gebete hast du nachgeholt?{maxTotalCount}</Text>
                     <Pressable onPress={onClose}>
                         <MaterialIcons style={styles.titleIcon} name="close" size={35}  />
                     </Pressable>
@@ -71,6 +72,9 @@ export default function KazaPrayersModal({ onClose}: KazaNamazModalProps) {
                             <KazaPrayersModalChildComponent
                                 key={`${prayer}}`}
                                 prayersTimeName={prayer}
+                                maxTotalCount={maxTotalCount}
+                                internalFromDate={internalFromDate}
+                                internalToDate={internalToDate}
                             ></KazaPrayersModalChildComponent>
                         ))}
                     <Pressable style={({ pressed }) => [

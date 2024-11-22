@@ -17,7 +17,7 @@ export function DatePicker({ setDate, selectedCountry }: DatePickerProps) {
     const onChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
         const currentDate = selectedDate || date;
         setDateInternal(currentDate);
-        setDate(currentDate); // Call the setDate function passed as a prop
+        setDate(currentDate);
     };
 
     return (

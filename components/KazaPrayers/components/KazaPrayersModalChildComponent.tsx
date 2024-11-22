@@ -3,41 +3,55 @@ import {useCallback, useState} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useFocusEffect} from "@react-navigation/native";
 import {string} from "prop-types";
+import DatabaseService from "@/database/database";
+
+const databaseService = new DatabaseService();
 
 type PrayerTimeNameProps= {
     prayersTimeName: string;
+    maxTotalCount: number;
+    internalFromDate: Date;
 }
 
 
-export default function KazaPrayersModalChildComponent(prayersTimeName: PrayerTimeNameProps) {
-    // const [internalFromDate, setInternalFromDate] = useState<Date>(new Date());
-    // const [internalToDate, setInternalToDate] = useState<Date>(new Date());
+export default function KazaPrayersModalChildComponent({prayersTimeName, maxTotalCount, internalFromDate}: PrayerTimeNameProps) {
     const [count, setCount] = useState(0);
 
-    // const dateConverter = useCallback((selectedDate: Date) => {
-    //     return selectedDate.toISOString().split('T')[0];
-    // }, []);
-    //
-    // useFocusEffect(
-    //     useCallback(() => {
-    //         const loadData = async () => {
-    //             const fromDateString: string | null = await AsyncStorage.getItem('FromDateString');
-    //             const toDateString: string | null  = await AsyncStorage.getItem('ToDateString');
-    //
-    //             setInternalFromDate(new Date(fromDateString));
-    //             setInternalToDate(new Date(toDateString));
-    //         };
-    //
-    //         loadData();
-    //
-    //         return () => {};
-    //     }, [])
-    // );
-    console.log(prayersTimeName);
+    const addNamaz = useCallback(async (internalFromDate: Date, prayersTimeName: string, maxTotalCount: number) => {
+        try {
+            await databaseService.initializeDatabase();
+
+            const daysToAdd = [...Array(maxTotalCount).keys()];
+
+            const formatDate = (date: Date): string => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+
+                return `${year}-${month}-${day}`;
+            };
+
+            await Promise.all(daysToAdd.map(dayOffset => {
+                const currentDate = new Date(internalFromDate);
+                currentDate.setDate(currentDate.getDate() + dayOffset);
+                currentDate.setHours(0, 0, 0, 0);
+                const formattedDate = formatDate(currentDate);
+
+                databaseService.addKazaNamaz(formattedDate, prayersTimeName, "erledigt");
+                alert(`Eintrag wurde erfolgreich gespeichert`);
+                // alert(formattedDate);
+            }));
+
+        } catch (error) {
+            console.error('Error saving prayer status:', error);
+            throw error;
+        }
+    }, []);
+
     return (
                     <View style={{flexDirection: "column", justifyContent: "space-between"}}>
                         <View style={ styles.kazaPrayersContainer }>
-                            <Text style={ styles.kazaPrayersName }>{prayersTimeName.prayersTimeName}</Text>
+                            <Text style={ styles.kazaPrayersName }>{prayersTimeName}</Text>
                             <View  style={ styles.kazaPrayersCountContainer }>
                                 <Text style={ styles.kazaPrayersCount }>{count}</Text>
                                 <Pressable onPress={() => count > 0 && setCount(count - 1)} style={({ pressed }) => [
@@ -46,7 +60,7 @@ export default function KazaPrayersModalChildComponent(prayersTimeName: PrayerTi
                                 >
                                     <Text style={{ textAlign: "center", fontSize: 28, fontWeight: "300"}}>-</Text>
                                 </Pressable>
-                                <Pressable onPress={() => setCount(count + 1)} style={({ pressed }) => [
+                                <Pressable onPress={() => { if(count < maxTotalCount) {setCount(count + 1)}}} style={({ pressed }) => [
                                     pressed ? styles.kazaPrayersCountInDecreasePressed : styles.kazaPrayersCountInDecrease
                                 ]}
                                 >
@@ -56,6 +70,7 @@ export default function KazaPrayersModalChildComponent(prayersTimeName: PrayerTi
                             <Pressable style={({ pressed }) => [
                                 pressed ? styles.kazaPrayersSaveButtonContainerPressed : styles.kazaPrayersSaveButtonContainer
                             ]}
+                                        onPress={() => addNamaz(internalFromDate, prayersTimeName, maxTotalCount)}
                             >
                                 <Text style={ styles.kazaPrayersSaveButtonText }>nachgeholt</Text>
                             </Pressable>

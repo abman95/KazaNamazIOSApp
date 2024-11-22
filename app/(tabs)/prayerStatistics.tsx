@@ -89,7 +89,8 @@ export default function PrayerStatistics(): JSX.Element {
 
     const onKazaPrayersModalClose = useCallback(async () => {
         setIsKazaPrayersModalVisible(false);
-    }, [])
+        void initAndLoad(fromDateString, toDateString);
+    }, [fromDateString, toDateString])
 
     const onKazaPrayersModalOpen = useCallback(async () => {
         setIsKazaPrayersModalVisible(true);
@@ -140,7 +141,7 @@ export default function PrayerStatistics(): JSX.Element {
     return (
         <View style={styles.container}>
             {isStatisticModalVisible && <StatisticsDatePickerModal onClose={onStatisticModalClose}/>}
-            {isKazaPrayersModalVisible && <KazaPrayersModal onClose={onKazaPrayersModalClose}/>}
+            {isKazaPrayersModalVisible && <KazaPrayersModal onClose={onKazaPrayersModalClose} maxTotalCount={maxTotalCount}/>}
             <Text style={styles.containerHeader}>Gebete Statistik</Text>
             <View style={ styles.statisticFilterContainer}>
                 <Text style={ styles.statisticFilterText}>Zeitraum: {fromDateString} - {toDateString}</Text>

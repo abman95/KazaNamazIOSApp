@@ -5,6 +5,7 @@ import { DatePicker } from '@/components/DatePicker/DatePicker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import {EditPrayerTimesImages} from "@/components/PrayerTimes/EditPrayerTimes/EditPrayerTimesImages";
+import {string} from "prop-types";
 
 // Constants
 const PRAYER_TIMES = ['AlleGebete', 'Morgen', 'Mittag', 'Nachmittag', 'Abend', 'Nacht'] as const;
@@ -159,8 +160,15 @@ export default function PrayerEditsPage(): JSX.Element {
                 date: date
             });
 
-            const formattedDate = date.toISOString().split('T')[0];
-            setFormattedSelectedDate(formattedDate);
+            const formattedDate = (date: Date): string => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+
+                return `${year}-${month}-${day}`;
+            };
+
+            setFormattedSelectedDate(formattedDate(date));
             const response = await fetch(
                 `${API_URL}/${formattedDate}?latitude=${selectedCountry.latitude}&longitude=${selectedCountry.longitude}&method=${selectedMethod.id}&timezonestring=Europe/Berlin`
             );
@@ -224,8 +232,10 @@ export default function PrayerEditsPage(): JSX.Element {
     }, [selectedDate, selectedCountry, selectedMethod, isInitialized]);
 
     const handleDateChange = useCallback((newDate: Date): void => {
+        alert(newDate)
         setSelectedDate(newDate);
     }, []);
+
 
     if (!isInitialized) {
         return (

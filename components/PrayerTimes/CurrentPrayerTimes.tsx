@@ -10,8 +10,17 @@ import { CurrentPrayer } from '@/components/PrayerTimes/CurrentPrayerTimes/Curre
 import { NextPrayer } from './CurrentPrayerTimes/NextPrayer';
 import {convertPrayerName} from "@/components/PrayerTimes/CurrentPrayerTimes/convertPrayerName";
 import {useFocusEffect} from "@react-navigation/native";
+import {string} from "prop-types";
 
 const databaseService = new DatabaseService();
+
+const formattedDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+};
 
 export const CurrentPrayerTimes: React.FC<PrayerProps> = ({
                                                        currentAndNextPrayersProperties,
@@ -20,9 +29,7 @@ export const CurrentPrayerTimes: React.FC<PrayerProps> = ({
     const [isLoading, setIsLoading] = useState(true);
     const { selectedOption, setSelectedOption, showPicker } = usePrayerStatus();
     const prayerTimes = useTimeCalculation(currentTime, currentAndNextPrayersProperties);
-    const [currentDate] = useState<string>(
-        currentAndNextPrayersProperties.currentDate.toISOString().split('T')[0]
-    );
+    const [currentDate] = useState<string>(formattedDate(currentAndNextPrayersProperties.currentDate));
     const prevSelectedOption = useRef<string | null>(null);
 
     const initAndLoad = useCallback(async () => {

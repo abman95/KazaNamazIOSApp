@@ -5,8 +5,17 @@ import DatabaseService from '@/database/database';
 import { PRAYER_OPTIONS } from '@/components/PrayerTimes/CurrentPrayerTimes/prayer.constants';
 import {convertPrayerName} from "@/components/PrayerTimes/CurrentPrayerTimes/convertPrayerName";
 import {useFocusEffect} from "@react-navigation/native";
+import {string} from "prop-types";
 
 const databaseService = new DatabaseService();
+
+const formattedDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+};
 
 export const usePrayerStatus = () => {
     const [selectedOption, setSelectedOption] = useState<string>('');
@@ -52,8 +61,8 @@ export const usePrayerStatus = () => {
                     const newStatus = PRAYER_OPTIONS[buttonIndex] as string;
                     setSelectedOption(newStatus);
                     try {
-                        const formattedDate = currentDate.toISOString().split('T')[0];
-                        await addNamaz(formattedDate, currentPrayerName, newStatus);
+                        const formattedDateString = formattedDate(currentDate);
+                        await addNamaz(formattedDateString, currentPrayerName, newStatus);
                     } catch (error) {
                         console.error('Error saving prayer status:', error);
                         setSelectedOption(selectedOption);
