@@ -1,8 +1,5 @@
 import {Text, StyleSheet, View, Pressable, Dimensions} from "react-native";
 import {useCallback, useEffect, useState} from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import {useFocusEffect} from "@react-navigation/native";
-import {string} from "prop-types";
 import DatabaseService from "@/database/database";
 
 const databaseService = new DatabaseService();
@@ -108,7 +105,7 @@ export default function KazaPrayersModalChildComponent({prayersTimeName,
     );
 }
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
     kazaPrayersContainer: {
@@ -134,7 +131,7 @@ const styles = StyleSheet.create({
         height: "100%",
         justifyContent: "flex-end",
         alignItems: "center",
-        gap: width*0,
+        gap: 0,
     },
     kazaPrayersCount: {
         width: width*0.078,

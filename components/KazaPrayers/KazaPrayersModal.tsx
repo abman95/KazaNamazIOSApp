@@ -1,6 +1,5 @@
-import {Modal, Text, StyleSheet, View, Pressable, FlatList, Dimensions} from "react-native";
+import {Modal, Text, StyleSheet, View, Pressable, Dimensions} from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import {useCallback, useState} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useFocusEffect} from "@react-navigation/native";
@@ -160,7 +159,7 @@ const styles = StyleSheet.create({
         height: "100%",
         justifyContent: "flex-end",
         alignItems: "center",
-        gap: width*0,
+        gap: 0,
     },
     kazaPrayersCount: {
         width: width*0.078,
