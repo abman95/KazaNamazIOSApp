@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
-import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import { Text, View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 type DatePickerProps = {
     setDate: (date: Date) => void;
@@ -13,22 +13,36 @@ type DatePickerProps = {
 
 export function DatePicker({ setDate, selectedCountry }: DatePickerProps) {
     const [date, setDateInternal] = useState(new Date());
+    const [show, setShow] = useState(false);
 
-    const onChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
+    const onChange = (_event: any, selectedDate?: Date) => {
         const currentDate = selectedDate || date;
+        if (Platform.OS === 'android') {
+            setShow(false);
+        }
         setDateInternal(currentDate);
         setDate(currentDate);
     };
 
+
     return (
         <View style={styles.container}>
             <Text style={styles.locationText}>{selectedCountry.name}, Deutschland</Text>
-            <DateTimePicker
-                value={date}
-                mode="date"
-                display="default"
-                onChange={onChange}
-            />
+            {Platform.OS === 'android' && (
+            <TouchableOpacity onPress={() => setShow(true)}>
+                <Text style={styles.dateText}>{date.toLocaleDateString()}</Text>
+            </TouchableOpacity>
+            )}
+            {(Platform.OS === 'ios' || show) && (
+                <DateTimePicker
+                    testID="dateTimePicker"
+                    value={date}
+                    mode="date"
+                    is24Hour={true}
+                    onChange={onChange}
+                    display={Platform.OS === 'ios' ? 'default' : 'spinner'}
+                />
+            )}
         </View>
     );
 }
@@ -47,5 +61,10 @@ const styles = StyleSheet.create({
         color: "white",
         fontSize: 17,
         fontWeight: "300",
+    },
+    dateText: {
+        color: 'white',
+        fontSize: 17,
+        marginLeft: 10,
     },
 });
