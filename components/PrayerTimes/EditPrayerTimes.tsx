@@ -21,6 +21,8 @@ interface PrayerTimesProps {
     setPrayerUpdate?: (update: { value: number; timestamp: number }) => void;
     formattedSelectedDate: string;
     globalUpdateTrigger?: number;
+    isInitialPrayerEntry: boolean;
+    setIsInitialPrayerEntry: (arg0: boolean) => void;
 }
 
 const OPTIONS = ['offen', 'erledigt', 'Abbrechen'] as const;
@@ -52,6 +54,8 @@ export const EditPrayerTimes = memo(function EditPrayerTimes({
                                                                  setPrayerUpdate,
                                                                  formattedSelectedDate,
                                                                  globalUpdateTrigger,
+                                                                 isInitialPrayerEntry,
+                                                                 setIsInitialPrayerEntry
                                                              }: PrayerTimesProps) {
         const [selectedOption, setSelectedOption] = useState<string>();
         const [isLoading, setIsLoading] = useState(true);
@@ -73,14 +77,15 @@ export const EditPrayerTimes = memo(function EditPrayerTimes({
                 console.error('Error initializing and loading prayer status:', error);
             } finally {
                 setIsLoading(false);
+                setIsInitialPrayerEntry(false);
             }
         }, [formattedSelectedDate, prayersTimeName]);
 
         useEffect(() => {
-            if (globalUpdateTrigger !== undefined) {
+            if (globalUpdateTrigger !== undefined || isInitialPrayerEntry) {
                 void initAndLoad();
             }
-        }, [globalUpdateTrigger, initAndLoad]);
+        }, [globalUpdateTrigger, initAndLoad, isInitialPrayerEntry]);
 
         useFocusEffect(
             useCallback(() => {
@@ -110,6 +115,7 @@ export const EditPrayerTimes = memo(function EditPrayerTimes({
                     }
                 } else {
                     await databaseService.addKazaNamaz(currentDate, prayerName, status);
+                    setIsInitialPrayerEntry(true);
                     setSelectedOption(status);
                 }
             } catch (error) {
@@ -213,7 +219,8 @@ export const EditPrayerTimes = memo(function EditPrayerTimes({
     }, (prevProps, nextProps) =>
         prevProps.formattedSelectedDate === nextProps.formattedSelectedDate &&
         prevProps.prayersTimeName === nextProps.prayersTimeName &&
-        prevProps.globalUpdateTrigger === nextProps.globalUpdateTrigger
+        prevProps.globalUpdateTrigger === nextProps.globalUpdateTrigger &&
+        prevProps.isInitialPrayerEntry === nextProps.isInitialPrayerEntry
 );
 
 const { width } = Dimensions.get('window');

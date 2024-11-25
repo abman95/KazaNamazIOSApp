@@ -1,33 +1,14 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { Text, View, StyleSheet, Dimensions, ImageStyle } from 'react-native';
+import { Text, View, StyleSheet, Dimensions } from 'react-native';
 import { EditPrayerTimes, CACHED_IMAGES } from '@/components/PrayerTimes/EditPrayerTimes';
 import { DatePicker } from '@/components/DatePicker/DatePicker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import {EditPrayerTimesImages} from "@/components/PrayerTimes/EditPrayerTimes/EditPrayerTimesImages";
-import {string} from "prop-types";
 
 // Constants
 const PRAYER_TIMES = ['AlleGebete', 'Morgen', 'Mittag', 'Nachmittag', 'Abend', 'Nacht'] as const;
 type PrayerTime = (typeof PRAYER_TIMES)[number];
-
-interface PrayerImages {
-    readonly allPrayers: number;
-    readonly morning: number;
-    readonly noon: number;
-    readonly afternoon: number;
-    readonly evening: number;
-    readonly night: number;
-}
-
-const IMAGES: PrayerImages = {
-    allPrayers: require('../../assets/images/allPrayerTimesImageCube.png'),
-    morning: require('../../assets/images/morgenGebet.jpg'),
-    noon: require('../../assets/images/mittagGebet.jpg'),
-    afternoon: require('../../assets/images/nachmittagGebet.jpg'),
-    evening: require('../../assets/images/abendGebet.jpg'),
-    night: require('../../assets/images/nachtGebet.jpg'),
-};
 
 interface PrayerTimesType {
     AlleGebete: string;
@@ -116,7 +97,8 @@ export default function PrayerEditsPage(): JSX.Element {
     const [selectedCountry, setSelectedCountry] = useState(DEFAULT_COUNTRY);
     const [selectedMethod, setSelectedMethod] = useState(DEFAULT_METHOD);
     const [isInitialized, setIsInitialized] = useState(false);
-    // Neuer State für globales Update
+    const [isInitialPrayerEntry, setIsInitialPrayerEntry] = useState(false);
+
     const [globalUpdateTrigger, setGlobalUpdateTrigger] = useState(0);
 
     const prevSelectedCountry = useRef<LocationConfig | null>(null);
@@ -263,6 +245,8 @@ export default function PrayerEditsPage(): JSX.Element {
                         setPrayerUpdate={prayer === "AlleGebete" ? handlePrayerUpdate : undefined}
                         formattedSelectedDate={formattedSelectedDate}
                         globalUpdateTrigger={globalUpdateTrigger}
+                        isInitialPrayerEntry={isInitialPrayerEntry}
+                        setIsInitialPrayerEntry={setIsInitialPrayerEntry}
                     />
                     </>
                 ))}
