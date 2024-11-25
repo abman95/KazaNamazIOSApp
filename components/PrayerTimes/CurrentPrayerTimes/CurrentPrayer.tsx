@@ -47,7 +47,7 @@ export const CurrentPrayer: React.FC<CurrentPrayerProps> = ({
         <Text style={styles.prayersTimeText}>
             {currentPrayerProps.currentPrayerName}: {prayerTimes.currentPrayerTime} Uhr
         </Text>
-        <LinearGradient colors={['#000000']} style={styles.linearGradientContainer}>
+        <View style={styles.linearGradientContainer}>
             <Text style={[styles.selectedOptionText, { color: 'white' }]}>{selectedOption}</Text>
             <TouchableOpacity
                 style={styles.optionSelector}
@@ -55,7 +55,7 @@ export const CurrentPrayer: React.FC<CurrentPrayerProps> = ({
             >
                 <Image style={styles.editImage} source={ICONS.edit} />
             </TouchableOpacity>
-        </LinearGradient>
+        </View>
         <Image style={styles.arrowIcon} source={ICONS.arrow} />
     </View>
 );
