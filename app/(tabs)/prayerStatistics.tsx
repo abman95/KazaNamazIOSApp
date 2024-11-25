@@ -130,18 +130,25 @@ export default function PrayerStatistics(): JSX.Element {
 
 
 
-    if (isLoading) {
-        return (
-            <View style={styles.container}>
-                <Text style={styles.containerHeader}>Loading...</Text>
-            </View>
-        );
-    }
+    // if (isLoading) {
+    //     return (
+    //         <View style={styles.container}>
+    //             <Text style={styles.containerHeader}>Gebete Statistik</Text>
+    //             <View style={ styles.statisticFilterContainer}>
+    //                 <Text style={ styles.statisticFilterText}>Zeitraum: {fromDateString} - {toDateString}</Text>
+    //             </View>
+    //         </View>
+    //     );
+    // }
 
     return (
         <View style={styles.container}>
             {isStatisticModalVisible && <StatisticsDatePickerModal onClose={onStatisticModalClose}/>}
-            {isKazaPrayersModalVisible && <KazaPrayersModal onClose={onKazaPrayersModalClose} maxTotalCount={maxTotalCount}/>}
+            {isKazaPrayersModalVisible && <KazaPrayersModal onClose={onKazaPrayersModalClose}
+                                                            maxTotalCount={maxTotalCount}
+                                                            onKazaPrayersModalClose={onKazaPrayersModalClose}
+                                                            prayerCounts={prayerCounts}
+            />}
             <Text style={styles.containerHeader}>Gebete Statistik</Text>
             <View style={ styles.statisticFilterContainer}>
                 <Text style={ styles.statisticFilterText}>Zeitraum: {fromDateString} - {toDateString}</Text>

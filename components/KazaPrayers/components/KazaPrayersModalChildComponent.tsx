@@ -13,10 +13,16 @@ type PrayerTimeNameProps= {
     internalFromDate: Date;
     isfollowUpPrayersButtonCallback: boolean;
     setIsfollowUpPrayersButtonCallback?: (value: boolean) => void;
+    prayerCounts: number;
 }
 
 
-export default function KazaPrayersModalChildComponent({prayersTimeName, maxTotalCount, internalFromDate, isfollowUpPrayersButtonCallback, setIsfollowUpPrayersButtonCallback} : PrayerTimeNameProps) {
+export default function KazaPrayersModalChildComponent({prayersTimeName,
+                                                           maxTotalCount,
+                                                           internalFromDate,
+                                                           isfollowUpPrayersButtonCallback,
+                                                           setIsfollowUpPrayersButtonCallback,
+                                                           prayerCounts} : PrayerTimeNameProps) {
     const [count, setCount] = useState(0);
 
 
@@ -35,7 +41,6 @@ export default function KazaPrayersModalChildComponent({prayersTimeName, maxTota
 
             let array: string[] = [];
             let currentDate = new Date(internalFromDate);
-
 
             while (array.length < count) {
                 await databaseService.initializeDatabase();
@@ -56,6 +61,8 @@ export default function KazaPrayersModalChildComponent({prayersTimeName, maxTota
             throw error;
         }
     }, []);
+
+    console.log(prayerCounts)
 
     useEffect(() => {
         if (isfollowUpPrayersButtonCallback) {
@@ -82,20 +89,20 @@ export default function KazaPrayersModalChildComponent({prayersTimeName, maxTota
                                 >
                                     <Text style={{ textAlign: "center", fontSize: 28, fontWeight: "300"}}>-</Text>
                                 </Pressable>
-                                <Pressable onPress={() => { if(count < maxTotalCount) {setCount(count + 1)}}} style={({ pressed }) => [
+                                <Pressable onPress={() => { if(count < (maxTotalCount - prayerCounts)) {setCount(count + 1)}}} style={({ pressed }) => [
                                     pressed ? styles.kazaPrayersCountInDecreasePressed : styles.kazaPrayersCountInDecrease
                                 ]}
                                 >
                                     <Text style={{ textAlign: "center", fontSize: 28, fontWeight: "300"}}>+</Text>
                                 </Pressable>
                             </View>
-                            <Pressable style={({ pressed }) => [
-                                pressed ? styles.kazaPrayersSaveButtonContainerPressed : styles.kazaPrayersSaveButtonContainer
-                            ]}
-                                        onPress={() => addNamaz(internalFromDate, prayersTimeName, count)}
-                            >
-                                <Text style={ styles.kazaPrayersSaveButtonText }>nachgeholt</Text>
-                            </Pressable>
+                            {/*<Pressable style={({ pressed }) => [*/}
+                            {/*    pressed ? styles.kazaPrayersSaveButtonContainerPressed : styles.kazaPrayersSaveButtonContainer*/}
+                            {/*]}*/}
+                            {/*            onPress={() => addNamaz(internalFromDate, prayersTimeName, count)}*/}
+                            {/*>*/}
+                            {/*    <Text style={ styles.kazaPrayersSaveButtonText }>nachgeholt</Text>*/}
+                            {/*</Pressable>*/}
                         </View>
                     </View>
     );

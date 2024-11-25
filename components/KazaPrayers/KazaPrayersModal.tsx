@@ -13,9 +13,17 @@ const PRAYER_TIMES = ['Morgen', 'Mittag', 'Nachmittag', 'Abend', 'Nacht'] as con
 type KazaNamazModalProps = {
     onClose: () => void;
     maxTotalCount: number;
+    onKazaPrayersModalClose: () => void;
+    prayerCounts: {
+        "Abend": number;
+        "Mittag": number;
+        "Morgen": number;
+        "Nachmittag": number;
+        "Nacht": number;
+    };
 };
 
-export default function KazaPrayersModal({ onClose, maxTotalCount}: KazaNamazModalProps) {
+export default function KazaPrayersModal({ onClose, maxTotalCount, onKazaPrayersModalClose, prayerCounts}: KazaNamazModalProps) {
     const [internalFromDate, setInternalFromDate] = useState<Date>(new Date());
     const [internalToDate, setInternalToDate] = useState<Date>(new Date());
     const [isfollowUpPrayersButtonCallback, setIsfollowUpPrayersButtonCallback] = useState(false);
@@ -56,15 +64,21 @@ export default function KazaPrayersModal({ onClose, maxTotalCount}: KazaNamazMod
                                 key={`${prayer}}`}
                                 prayersTimeName={prayer}
                                 maxTotalCount={maxTotalCount}
+                                prayerCounts={prayerCounts[prayer]}
                                 internalFromDate={internalFromDate}
                                 isfollowUpPrayersButtonCallback={isfollowUpPrayersButtonCallback}
                                 setIsfollowUpPrayersButtonCallback={setIsfollowUpPrayersButtonCallback}
                             ></KazaPrayersModalChildComponent>
                         ))}
-                    <Pressable onPress={() => setIsfollowUpPrayersButtonCallback(true)}  style={({ pressed }) => [
+                    <Pressable onPress={() => {
+                        setIsfollowUpPrayersButtonCallback(true);
+                        setTimeout(() => {
+                            onKazaPrayersModalClose();
+                        }, 200);
+                    }}
+                               style={({ pressed }) => [
                         pressed ? styles.saveDatesPressed : styles.saveDates
                     ]}
-                               // onPress={handlePressSaveDates}
                     >
                         <Text style={ styles.saveDatesText }>Speichern</Text>
                     </Pressable>
@@ -81,13 +95,13 @@ const styles = StyleSheet.create({
         flex: 1,
         borderColor: "white",
         borderWidth: 1,
-        height: height*.6,
+        height: height*.61,
         width: width,
         backgroundColor: "black",
         borderRadius: 10,
         position: "absolute",
         right: 0,
-        top: height*.2,
+        top: height*.19,
         flexDirection: "column",
     },
     titleContainer: {
@@ -202,7 +216,7 @@ const styles = StyleSheet.create({
         width: 100,
         borderRadius: 10,
         alignItems: "center",
-        alignSelf: "center",
+        alignSelf: "flex-end",
         justifyContent: "center",
         verticalAlign: "bottom",
     },
@@ -212,7 +226,7 @@ const styles = StyleSheet.create({
         width: 100,
         borderRadius: 10,
         alignItems: "center",
-        alignSelf: "center",
+        alignSelf: "flex-end",
         justifyContent: "center",
         verticalAlign: "bottom",
     },
