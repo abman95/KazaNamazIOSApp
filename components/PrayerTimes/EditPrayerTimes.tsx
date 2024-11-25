@@ -1,7 +1,8 @@
 import React, {memo, useCallback, useEffect, useState} from 'react';
 import {useFocusEffect} from "@react-navigation/native";
-import {ActionSheetIOS, Dimensions, StyleSheet, Text, TextStyle, TouchableOpacity, View,} from 'react-native';
+import {Alert, Dimensions, StyleSheet, Text, TextStyle, TouchableOpacity, View} from 'react-native';
 import DatabaseService from "@/database/database";
+import {PRAYER_STATUS} from "@/components/PrayerTimes/CurrentPrayerTimes/prayer.constants";
 
 const databaseService = new DatabaseService();
 
@@ -15,7 +16,6 @@ export const CACHED_IMAGES = {
 } as const;
 
 interface PrayerTimesProps {
-    prayersImage: keyof typeof CACHED_IMAGES;
     prayersTimeName: string;
     prayerTimes: string;
     setPrayerUpdate?: (update: { value: number; timestamp: number }) => void;
@@ -25,8 +25,8 @@ interface PrayerTimesProps {
     setIsInitialPrayerEntry: (arg0: boolean) => void;
 }
 
-const OPTIONS = ['offen', 'erledigt', 'Abbrechen'] as const;
-const CANCEL_INDEX = 2;
+const OPTIONS: string[] = ['offen', 'erledigt'];
+const CANCEL_TEXT_VALUE = "Abbrechen";
 
 const parsePrayerTimeToInt = (prayerTimes: string) => {
     if (prayerTimes === "0") return 0;
@@ -50,7 +50,6 @@ const outputPickedDate = (formattedSelectedDate: string): Date => {
 export const EditPrayerTimes = memo(function EditPrayerTimes({
                                                                  prayerTimes,
                                                                  prayersTimeName,
-                                                                 prayersImage,
                                                                  setPrayerUpdate,
                                                                  formattedSelectedDate,
                                                                  globalUpdateTrigger,
@@ -95,7 +94,6 @@ export const EditPrayerTimes = memo(function EditPrayerTimes({
 
         const addNamaz = useCallback(async (currentDate: string, prayerName: string, status: string) => {
             try {
-                alert(currentDate)
                 await databaseService.initializeDatabase();
 
                 if (prayerName === "AlleGebete") {
@@ -124,23 +122,26 @@ export const EditPrayerTimes = memo(function EditPrayerTimes({
             }
         }, [setPrayerUpdate]);
 
-        const handlePress = useCallback(({formattedSelectedDate, prayersTimeName}: {
-            formattedSelectedDate: string;
-            prayersTimeName: string;
-        }) => {
-            ActionSheetIOS.showActionSheetWithOptions(
+
+    const handlePress = useCallback(({formattedSelectedDate, prayersTimeName}: {
+        formattedSelectedDate: string;
+        prayersTimeName: string;
+    }) => {
+        Alert.alert(
+            PRAYER_STATUS,
+            '',
+            [
+                ...OPTIONS.map((option) => ({
+                    text: option,
+                    onPress: () => addNamaz(formattedSelectedDate, prayersTimeName, option)
+                })),
                 {
-                    options: OPTIONS,
-                    cancelButtonIndex: CANCEL_INDEX,
-                },
-                async (buttonIndex: number) => {
-                    if (buttonIndex !== CANCEL_INDEX) {
-                        const selectedStatus = OPTIONS[buttonIndex];
-                        await addNamaz(formattedSelectedDate, prayersTimeName, selectedStatus);
-                    }
+                    text: CANCEL_TEXT_VALUE,
+                    style: 'cancel'
                 }
-            );
-        }, [addNamaz]);
+            ]
+        );
+    }, [addNamaz]);
 
         useEffect(() => {
             const timeInterval = setInterval(() => {
@@ -155,10 +156,6 @@ export const EditPrayerTimes = memo(function EditPrayerTimes({
             };
         }, []);
 
-        // useEffect(() => {
-        //     if (timeInSeconds !== 1) return;
-        //     setCurrentDate(outputCurrentDate())
-        // }, [timeInSeconds]);
 
         useFocusEffect(
             useCallback(() => {
@@ -175,9 +172,9 @@ export const EditPrayerTimes = memo(function EditPrayerTimes({
             );
         }
 
-        const shouldShowFullContent = outputPickedDate(formattedSelectedDate).setHours(0, 0, 0, 0) < currentDate || ( /////// selectedDate ÄNDERN
+        const shouldShowFullContent = outputPickedDate(formattedSelectedDate).setHours(0, 0, 0, 0) < currentDate || (
             timeInSeconds >= parsePrayerTimeToInt(prayerTimes) &&
-            currentDate >= outputPickedDate(formattedSelectedDate).setHours(0, 0, 0, 0) /////// selectedDate ÄNDERN
+            currentDate >= outputPickedDate(formattedSelectedDate).setHours(0, 0, 0, 0)
         );
         return (
             shouldShowFullContent ? (

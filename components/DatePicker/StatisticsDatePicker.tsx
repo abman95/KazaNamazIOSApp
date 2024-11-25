@@ -1,9 +1,8 @@
-import {Modal, Text, StyleSheet, View, Pressable, FlatList, Dimensions} from "react-native";
+import {Modal, Text, StyleSheet, View, Pressable, Dimensions} from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import {useCallback, useState} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {unescapeJsonPointer} from "ajv/lib/compile/util";
 import {useFocusEffect} from "@react-navigation/native";
 
 
@@ -39,11 +38,15 @@ export default function StatisticsDatePickerModal({ onClose}: StatisticsDatePick
     useFocusEffect(
         useCallback(() => {
             const loadData = async () => {
-                const fromDateString: string | null = await AsyncStorage.getItem('FromDateString');
-                const toDateString: string | null  = await AsyncStorage.getItem('ToDateString');
+                try {
+                    const fromDateString: string | null = await AsyncStorage.getItem('FromDateString');
+                    const toDateString: string | null  = await AsyncStorage.getItem('ToDateString');
 
-                setInternalFromDate(new Date(fromDateString));
-                setInternalToDate(new Date(toDateString));
+                    setInternalFromDate(fromDateString ? new Date(fromDateString) : new Date());
+                    setInternalToDate(toDateString ? new Date(toDateString) : new Date());
+                } catch (error) {
+                    console.error('Error loading dates from AsyncStorage:', error);
+                }
             };
 
             loadData();

@@ -1,8 +1,6 @@
 // src/types/prayer.types.ts
-import { ImageSourcePropType } from 'react-native';
-
 export type PrayerStatus = 'offen' | 'erledigt';
-export type PrayerOption = PrayerStatus | 'Abbrechen';
+export type PrayerOption = 'Abbrechen';
 
 export interface PrayerTimes {
     remainingPrayerTime: string;

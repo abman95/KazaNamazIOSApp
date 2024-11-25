@@ -9,7 +9,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const databaseService = new DatabaseService();
 
 const FILTER_ICON = require('../../assets/images/filterIcon.png');
-const INITIAL_START_DATE = '1999-01-01';
 const PRAYER_TIMES = ['Morgen', 'Mittag', 'Nachmittag', 'Abend', 'Nacht'] as const;
 
 interface PrayerStatistic {
@@ -29,7 +28,7 @@ export default function PrayerStatistics(): JSX.Element {
     const [isLoading, setIsLoading] = useState(true);
     const [isStatisticModalVisible, setIsStatisticModalVisible] = useState<boolean>(false);
     const [isKazaPrayersModalVisible, setIsKazaPrayersModalVisible] = useState<boolean>(false);
-    const [fromDateString, setFromDateString] = useState<string>(INITIAL_START_DATE);
+    const [fromDateString, setFromDateString] = useState<string>(new Date().toISOString().split('T')[0]);
     const [toDateString, setToDateString] = useState<string>(new Date().toISOString().split('T')[0]);
 
 
@@ -60,7 +59,7 @@ export default function PrayerStatistics(): JSX.Element {
         const fromDateString = await AsyncStorage.getItem('FromDateString');
         const toDateString = await AsyncStorage.getItem('ToDateString');
 
-        setFromDateString(fromDateString ? fromDateString.split('T')[0] : "1999-01-01");
+        setFromDateString(fromDateString ? fromDateString.split('T')[0] : new Date().toISOString().split('T')[0]);
         setToDateString(toDateString ? toDateString.split('T')[0] : new Date().toISOString().split('T')[0]);
     }, [])
 
@@ -96,22 +95,6 @@ export default function PrayerStatistics(): JSX.Element {
         setIsKazaPrayersModalVisible(true);
     }, [])
 
-
-    // const maxTotalCount = useMemo(() => {
-    //     const maxPrayed = prayedData.reduce((max, curr) =>
-    //             curr.count > max.count ? curr : max,
-    //         { count: 0 } as PrayerStatistic
-    //     ).count;
-    //
-    //     const maxUnprayed = unprayedData.reduce((max, curr) =>
-    //             curr.count > max.count ? curr : max,
-    //         { count: 0 } as PrayerStatistic
-    //     ).count;
-    //
-    //     return maxPrayed + maxUnprayed;
-    // }, [prayedData, unprayedData]);
-
-
     const maxTotalCount = useMemo(() => {
         const prayerNameString = "Morgen";
 
@@ -127,19 +110,7 @@ export default function PrayerStatistics(): JSX.Element {
     }, [maxTotalCount]);
 
     const prayerCounts = useMemo(() => getPrayerCounts(prayedData), [prayedData]);
-
-
-
-    // if (isLoading) {
-    //     return (
-    //         <View style={styles.container}>
-    //             <Text style={styles.containerHeader}>Gebete Statistik</Text>
-    //             <View style={ styles.statisticFilterContainer}>
-    //                 <Text style={ styles.statisticFilterText}>Zeitraum: {fromDateString} - {toDateString}</Text>
-    //             </View>
-    //         </View>
-    //     );
-    // }
+    
 
     return (
         <View style={styles.container}>

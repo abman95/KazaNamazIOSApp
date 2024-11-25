@@ -5,7 +5,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useFocusEffect} from "@react-navigation/native";
 import KazaPrayersModalChildComponent from "@/components/KazaPrayers/components/KazaPrayersModalChildComponent";
 
-
 const PRAYER_TIMES = ['Morgen', 'Mittag', 'Nachmittag', 'Abend', 'Nacht'] as const;
 
 
@@ -22,6 +21,14 @@ type KazaNamazModalProps = {
     };
 };
 
+const formattedDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+};
+
 export default function KazaPrayersModal({ onClose, maxTotalCount, onKazaPrayersModalClose, prayerCounts}: KazaNamazModalProps) {
     const [internalFromDate, setInternalFromDate] = useState<Date>(new Date());
     const [internalToDate, setInternalToDate] = useState<Date>(new Date());
@@ -34,8 +41,8 @@ export default function KazaPrayersModal({ onClose, maxTotalCount, onKazaPrayers
     useFocusEffect(
         useCallback(() => {
             const loadData = async () => {
-                const fromDateString: string | null = await AsyncStorage.getItem('FromDateString');
-                const toDateString: string | null  = await AsyncStorage.getItem('ToDateString');
+                const fromDateString: string = await AsyncStorage.getItem('FromDateString') || formattedDate(new Date());
+                const toDateString: string = await AsyncStorage.getItem('ToDateString') || formattedDate(new Date());
 
                 setInternalFromDate(new Date(fromDateString));
                 setInternalToDate(new Date(toDateString));

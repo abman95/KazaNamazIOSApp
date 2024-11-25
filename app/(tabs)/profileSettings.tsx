@@ -25,7 +25,7 @@ export default function profileSettings(): JSX.Element {
 
     const [selectedMethod, setSelectedMethod] = useState({
         id: "13",
-        name: "Diyanet",
+        name: "Diyanet İşleri Başkanlığı, Turkey",
     });
 
     useEffect(() => {

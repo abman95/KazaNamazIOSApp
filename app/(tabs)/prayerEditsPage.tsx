@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { Text, View, StyleSheet, Dimensions } from 'react-native';
-import { EditPrayerTimes, CACHED_IMAGES } from '@/components/PrayerTimes/EditPrayerTimes';
+import { EditPrayerTimes } from '@/components/PrayerTimes/EditPrayerTimes';
 import { DatePicker } from '@/components/DatePicker/DatePicker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -8,7 +8,6 @@ import {EditPrayerTimesImages} from "@/components/PrayerTimes/EditPrayerTimes/Ed
 
 // Constants
 const PRAYER_TIMES = ['AlleGebete', 'Morgen', 'Mittag', 'Nachmittag', 'Abend', 'Nacht'] as const;
-type PrayerTime = (typeof PRAYER_TIMES)[number];
 
 interface PrayerTimesType {
     AlleGebete: string;
@@ -66,19 +65,6 @@ const DEFAULT_METHOD: MethodConfig = {
     id: "13",
     name: "Diyanet İşleri Başkanlığı, Turkey",
 };
-
-const getImageForPrayer = (prayer: PrayerTime): keyof typeof CACHED_IMAGES => {
-    const imageMap: Record<PrayerTime, keyof typeof CACHED_IMAGES> = {
-        'AlleGebete': 'allPrayers',
-        'Morgen': 'morning',
-        'Mittag': 'noon',
-        'Nachmittag': 'afternoon',
-        'Abend': 'evening',
-        'Nacht': 'night',
-    };
-    return imageMap[prayer];
-};
-
 
 const convertTimeToSeconds = (time: string): string => {
     const [hours, minutes] = time.split(':').map(Number);
@@ -241,7 +227,6 @@ export default function PrayerEditsPage(): JSX.Element {
                         key={`${prayer}-${prayerUpdate.timestamp}`}
                         prayerTimes={prayerTimes[prayer]}
                         prayersTimeName={prayer}
-                        prayersImage={getImageForPrayer(prayer)}
                         setPrayerUpdate={prayer === "AlleGebete" ? handlePrayerUpdate : undefined}
                         formattedSelectedDate={formattedSelectedDate}
                         globalUpdateTrigger={globalUpdateTrigger}
