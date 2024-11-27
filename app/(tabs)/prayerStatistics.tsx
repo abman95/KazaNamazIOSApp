@@ -130,6 +130,7 @@ export default function PrayerStatistics(): JSX.Element {
         return maxTotalCount*5;
     }, [maxTotalCount]);
 
+
     return (
         <View style={styles.container}>
             {isStatisticModalVisible && <StatisticsDatePickerModal onClose={onStatisticModalClose}/>}
@@ -200,9 +201,12 @@ export default function PrayerStatistics(): JSX.Element {
             <View style={ styles.prayerProgressContainer }>
                 {/*<Text style={{ color: "white", fontSize: 7, marginTop: -200 }}>Daten: {JSON.stringify(unprayedData, null, 2)}</Text>*/}
                 {/*<Text style={{ color: "white", fontSize: 7, marginTop: -200 }}>Daten: {JSON.stringify(prayedData, null, 2)}</Text>*/}
-                <Text style={ styles.progressText }>{((totalPrayedPrayersCount/totalPrayerCountsForAllTimes)*100 === 0) ?
-                    `${prayerJourneyStartMessage}` :
-                    `Du hast ${Math.round((totalPrayedPrayersCount/totalPrayerCountsForAllTimes)*10000)/100}% deiner Gebete verrichtet!`}</Text>
+                <Text style={ styles.progressText }>
+                    { (totalPrayedPrayersCount === 0 && totalPrayerCountsForAllTimes === 0) || (totalPrayedPrayersCount / totalPrayerCountsForAllTimes) * 100 === 0
+                        ? `${prayerJourneyStartMessage}`
+                        : `Du hast ${Math.round((totalPrayedPrayersCount / totalPrayerCountsForAllTimes) * 10000) / 100}% deiner Gebete verrichtet!`
+                    }
+                </Text>
                 <Text style={ styles.progressMessage }>{getProgressMessage((totalPrayedPrayersCount/totalPrayerCountsForAllTimes)*100)}</Text>
                 <Pressable
                     onPress={onKazaPrayersModalOpen}
