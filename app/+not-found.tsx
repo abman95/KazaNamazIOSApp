@@ -4,7 +4,7 @@ import { Link } from "expo-router";
 export default function NotFoundScreen() {
     return (
         <View style={ styles.container }>
-            <Link href="/app/authscreen" style={styles.button}>Go back to PrayerEditsPage screen!</Link>
+            <Link href="/app/PrayerAppInitializationScreen" style={styles.button}>Go back to PrayerEditsPage screen!</Link>
         </View>
         )
     }

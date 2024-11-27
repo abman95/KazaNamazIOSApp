@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import { Text, View, StyleSheet, ImageSourcePropType } from 'react-native';
+import { Text, View, StyleSheet } from 'react-native';
 import CurrentPrayerTimes from "@/components/PrayerTimes/CurrentPrayerTimes";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useFocusEffect} from "@react-navigation/native";
@@ -94,14 +94,14 @@ const DEFAULT_PRAYER_TIMES: PrayerTimesType = {
 };
 
 const DEFAULT_COUNTRY: LocationConfig = {
-    name: "Bremen",
-    latitude: "53.075878",
-    longitude: "8.807311",
+    name: "0",
+    latitude: "0",
+    longitude: "0",
 };
 
 const DEFAULT_METHOD: MethodConfig = {
-    id: "13",
-    name: "Diyanet İşleri Başkanlığı, Turkey",
+    id: "0",
+    name: "0",
 };
 
 const API_URL = 'https://api.aladhan.com/v1/timings';

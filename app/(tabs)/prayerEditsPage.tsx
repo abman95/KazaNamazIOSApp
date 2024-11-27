@@ -58,14 +58,14 @@ type MethodConfig = {
 };
 
 const DEFAULT_COUNTRY: LocationConfig = {
-    name: "Bremen",
-    latitude: "53.075878",
-    longitude: "8.807311",
+    name: "0",
+    latitude: "0",
+    longitude: "0",
 };
 
 const DEFAULT_METHOD: MethodConfig = {
-    id: "13",
-    name: "Diyanet İşleri Başkanlığı, Turkey",
+    id: "0",
+    name: "0",
 };
 
 const convertTimeToSeconds = (time: string): string => {

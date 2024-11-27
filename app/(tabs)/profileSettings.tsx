@@ -17,16 +17,16 @@ const settingsIcons = {
 export default function profileSettings(): JSX.Element {
     const [isCountryModalVisible, setIsCountryModalVisible] = useState<boolean>(false);
     const [isMethodModalVisible, setIsMethodModalVisible] = useState<boolean>(false);
-    const [selectedCountry, setSelectedCountry] = useState({
-        name: "Bremen",
-        latitude: "53.075878",
-        longitude: "8.807311",
+    const [selectedCountry, setSelectedCountry] = useState<Record<string, string>>({
+        name: "0",
+        latitude: "0",
+        longitude: "0",
+    });
+    const [selectedMethod, setSelectedMethod] = useState<Record<string, string>>({
+        id: "0",
+        name: "0",
     });
 
-    const [selectedMethod, setSelectedMethod] = useState({
-        id: "13",
-        name: "Diyanet İşleri Başkanlığı, Turkey",
-    });
 
     useEffect(() => {
         const loadInitialData = async () => {

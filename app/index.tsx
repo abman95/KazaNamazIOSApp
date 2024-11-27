@@ -1,269 +1,313 @@
-import React, { useState, useCallback } from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import { useRouter } from 'expo-router';
+import { Alert } from 'react-native';
 import {
     View,
     Text,
     Image,
     StyleSheet,
-    Keyboard,
-    TouchableWithoutFeedback,
-    KeyboardAvoidingView,
-    Platform,
-    Alert,
     ViewStyle,
     TextStyle,
-    ImageStyle,
+    ImageStyle, Dimensions, Pressable,
 } from 'react-native';
-import { AuthInput } from '@/components/Authentication/AuthInput';
-import { AuthButton } from '@/components/Authentication/AuthButton';
-import { COLORS, SIZES } from '@/constants/theme';
+import CountryPicker from "@/components/settings/CountryPicker";
+import PrayerCalculationMethod from "@/components/settings/PrayerCalculationMethod";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Types and Interfaces
-export interface FormData {
-    readonly email: string;
-    readonly password: string;
-}
+const welcomeAppTextHeader: string = "Willkommen zur Kaza Namaz App!";
+const welcomeAppTextSubHeader: string = "Um fortzufahren wählen Sie bitte Ihre Stadt und die gewünschte Gebetszeit Berechnungsmethode aus. Diese können später in den App-Einstellungen nach Belieben geändert werden.";
 
-export type AuthMode = 'login' | 'register';
-
-interface ValidationResult {
-    readonly isValid: boolean;
-    readonly message: string;
-}
-
-interface UseAuthFormReturn {
-    readonly formData: FormData;
-    readonly handleInputChange: (field: keyof FormData) => (value: string) => void;
-    readonly resetForm: () => void;
-}
-
-interface UseAuthReturn {
-    readonly authMode: AuthMode;
-    readonly toggleAuthMode: () => void;
-    readonly handleAuthentication: (data: FormData) => Promise<void>;
-}
-
-// Constants
-const INITIAL_FORM_DATA: Readonly<FormData> = {
-    email: '',
-    password: '',
+const settingsIcons = {
+    currentLocation: require('../assets/images/currentLocation.png'),
+    prayerTimeMethod: require('../assets/images/prayerTimeMethod1.png'),
 } as const;
 
-const TEST_CREDENTIALS: Readonly<FormData> = {
-    email: 'A',
-    password: 'a',
-} as const;
 
-// Custom Hooks
-const useAuthForm = (initialState: FormData = INITIAL_FORM_DATA): UseAuthFormReturn => {
-    const [formData, setFormData] = useState<FormData>(initialState);
-
-    const handleInputChange = useCallback((field: keyof FormData) =>
-            (value: string): void => {
-                setFormData(prev => ({ ...prev, [field]: value }));
-            },
-        []);
-
-    const resetForm = useCallback((): void => {
-        setFormData(INITIAL_FORM_DATA);
-    }, []);
-
-    return {
-        formData,
-        handleInputChange,
-        resetForm,
-    };
-};
-
-const useAuth = (): UseAuthReturn => {
-    const [authMode, setAuthMode] = useState<AuthMode>('login');
-    const router = useRouter();
-
-    const toggleAuthMode = useCallback((): void => {
-        setAuthMode(prevMode => (prevMode === 'login' ? 'register' : 'login'));
-    }, []);
-
-    const validateForm = useCallback((data: FormData): ValidationResult => {
-        if (!data.email || !data.password) {
-            return {
-                isValid: false,
-                message: 'Bitte alle Felder ausfüllen!',
-            };
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(data.email) && data.email !== TEST_CREDENTIALS.email) {
-            return {
-                isValid: false,
-                message: 'Bitte geben Sie eine gültige E-Mail-Adresse ein.',
-            };
-        }
-
-        if (authMode === 'register' && data.password.length < 8) {
-            return {
-                isValid: false,
-                message: 'Das Passwort muss mindestens 8 Zeichen lang sein.',
-            };
-        }
-
-        return {
-            isValid: true,
-            message: '',
-        };
-    }, [authMode]);
-
-    const handleAuthentication = useCallback(
-        async (data: FormData): Promise<void> => {
-            const validation = validateForm(data);
-
-            if (!validation.isValid) {
-                Alert.alert('Fehler', validation.message);
-                return;
-            }
-
-            try {
-                if (authMode === 'login') {
-                    if (
-                        data.email === TEST_CREDENTIALS.email &&
-                        data.password === TEST_CREDENTIALS.password
-                    ) {
-                        await router.push('/currentPrayer');
-                    } else {
-                        Alert.alert('Fehler', 'Login-Daten sind falsch!');
-                    }
-                } else {
-                    Alert.alert('Info', 'Registrierung ist noch nicht implementiert.');
-                }
-            } catch (error) {
-                if (error instanceof Error) {
-                    Alert.alert('Fehler', error.message);
-                } else {
-                    Alert.alert(
-                        'Fehler',
-                        'Bei der Authentifizierung ist ein Fehler aufgetreten.',
-                    );
-                }
-            }
-        },
-        [authMode, router, validateForm],
+const showAlert = (title: string, message: string) => {
+    Alert.alert(
+        title,
+        message,
+        [
+            { text: "OK", onPress: () => console.log("OK gedrückt") }
+        ],
+        { cancelable: false }
     );
-
-    return {
-        authMode,
-        toggleAuthMode,
-        handleAuthentication,
-    };
 };
 
-export const AuthScreen: React.FC = () => {
-    const { formData, handleInputChange } = useAuthForm();
-    const { authMode, toggleAuthMode, handleAuthentication } = useAuth();
+export const PrayerAppInitializationScreen: () => void | React.JSX.Element = () => {
+    const router = useRouter();
+    const [isModalVisible, setIsModalVisible] = useState<string>("");
+    const [selectedCountry, setSelectedCountry] = useState<Record<string, string>>({
+        name: "0",
+        latitude: "0",
+        longitude: "0",
+    });
+    const [selectedMethod, setSelectedMethod] = useState<Record<string, string>>({
+        id: "0",
+        name: "0",
+    });
+    const [isSelection, setIsSelection] = useState<boolean>(false);
 
-    const handleSubmit = useCallback((): void => {
-        Keyboard.dismiss();
-        void handleAuthentication(formData);
-    }, [formData, handleAuthentication]);
+    const handleContinue = useCallback(() => {
+        if (selectedCountry.name !== "0" && selectedMethod.name !== "0") {
+            setIsSelection(true)
+        } else {
+            let missingSelections = [];
+
+            if (selectedMethod.name === "0") {
+                missingSelections.push("Methode");
+            }
+            if (selectedCountry.name === "0") {
+                missingSelections.push("Stadt");
+            }
+
+            showAlert("Achtung", `Bitte wähle noch ${missingSelections.join(" & ")} aus.`);
+        }
+    }, [selectedCountry, selectedMethod]);
+
+    useEffect(() => {
+        const loadInitialData = async () => {
+            try {
+                const jsonValue = await AsyncStorage.getItem('selectedCountry');
+                if (jsonValue !== null) {
+                    const value = JSON.parse(jsonValue);
+                    setSelectedCountry(value);
+                }
+            } catch (e) {
+                console.error('Error loading initial data:', e);
+            }
+        };
+        void loadInitialData();
+    }, []);
+
+    useEffect(() => {
+        const loadInitialData = async () => {
+            try {
+                const jsonValue = await AsyncStorage.getItem('selectedMethod');
+                if (jsonValue !== null) {
+                    const value = JSON.parse(jsonValue);
+                    setSelectedMethod(value);
+                }
+            } catch (e) {
+                console.error('Error loading initial data:', e);
+            }
+        };
+        void loadInitialData();
+    }, []);
+
+    useEffect(() => {
+        const storeData = async () => {
+            try {
+                const jsonValue = JSON.stringify(selectedCountry);
+                await AsyncStorage.setItem('selectedCountry', jsonValue);
+            } catch (e) {
+                console.error('Error saving selectedCountry:', e);
+            }
+        };
+        void storeData();
+    }, [selectedCountry]);
+
+    useEffect(() => {
+        const storeData = async () => {
+            try {
+                const jsonValue = JSON.stringify(selectedMethod);
+                await AsyncStorage.setItem('selectedMethod', jsonValue);
+            } catch (e) {
+                console.error('Error saving selectedMethod:', e);
+            }
+        };
+        void storeData();
+    }, [selectedMethod]);
+
+    const onModalButtonPress = useCallback((modalType: string): void => {
+        setIsModalVisible(modalType)
+    }, []);
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-        >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={styles.content}>
+        selectedCountry.name !== "0" && selectedMethod.name !== "0" &&  isSelection ? (
+            router.replace('/currentPrayer')
+            ) : (
+        <View style={styles.container}>
+            {isModalVisible === "city" && (
+                <CountryPicker
+                    onClose={() => onModalButtonPress("")}
+                    setSelectedCountry={setSelectedCountry}
+                />
+            )}
+
+            {isModalVisible === "method" && (
+                <PrayerCalculationMethod
+                    onClose={() => onModalButtonPress("")}
+                    setSelectedMethod={setSelectedMethod}
+                />
+            )}
+            <View style={styles.content}>
                     <Text style={styles.header}>
-                        {authMode === 'login' ? 'Login' : 'Registrieren'}
+                        {welcomeAppTextHeader}
                     </Text>
 
-                    <Image
-                        source={require('../assets/images/loginMannequin.jpg')}
-                        style={styles.image}
-                        accessibilityLabel="Login Mannequin"
-                    />
-
-                    <View style={styles.form}>
-                        <AuthInput
-                            placeholder="E-Mail"
-                            value={formData.email}
-                            onChangeText={handleInputChange('email')}
-                            onSubmitEditing={handleSubmit}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            autoComplete="email"
-                            testID="email-input"
-                            returnKeyType="next"
-                        />
-
-                        <AuthInput
-                            placeholder="Passwort"
-                            value={formData.password}
-                            onChangeText={handleInputChange('password')}
-                            onSubmitEditing={handleSubmit}
-                            autoCapitalize="none"
-                            autoComplete="password"
-                            testID="password-input"
-                            returnKeyType="done"
-                            isPassword
-                        />
-
-                        <AuthButton
-                            title={authMode === 'login' ? 'Einloggen' : 'Registrieren'}
-                            onPress={handleSubmit}
-                            testID="submit-button"
-                        />
-
-                        <Text style={styles.toggleText}>
-                            Möchten Sie sich{' '}
-                            <Text onPress={toggleAuthMode} style={styles.toggleLink}>
-                                {authMode === 'login' ? 'Registrieren' : 'Einloggen'}
-                            </Text>
-                            ?
-                        </Text>
+                <View style={ styles.listContainer }>
+                    <View style={styles.cityContainer}>
+                        <Image style={ styles.settingsIcons } source={settingsIcons.currentLocation}/>
+                        <Text style={ styles.listElementCity }>Gewählter Standort</Text>
+                        <Pressable style={({ pressed }) => [
+                            pressed ? styles.pressableItemContainerPressed
+                                : styles.pressableItemContainer
+                        ]}
+                                   onPress={() => onModalButtonPress("city")}>
+                            <Text style={ styles.pressableItemText }>{selectedCountry.name === "0" ? "Wähle eine Stadt aus" : selectedCountry.name}</Text>
+                        </Pressable>
+                    </View>
+                    <View style={styles.methodContainer}>
+                        <Image style={ styles.settingsIcons } source={settingsIcons.prayerTimeMethod}/>
+                        <Text style={ styles.listElementMethod }>Gewählte Methode</Text>
+                        <Pressable style={({ pressed }) => [
+                            pressed ? styles.pressableItemContainerPressed
+                                : styles.pressableItemContainer
+                        ]}
+                                   onPress={() => onModalButtonPress("method")}>
+                            <Text style={ styles.pressableItemText }>{selectedMethod.name === "0" ? "Wähle eine Methode aus" : selectedMethod.name}</Text>
+                        </Pressable>
                     </View>
                 </View>
-            </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
+                <Pressable style={({ pressed }) => [
+                    pressed ? styles.continueButtonPressed
+                        : styles.continueButton
+                ]}
+                           onPress={() => {void handleContinue()}}>
+                    <Text style={ styles.continueButtonText }>Fortfahren</Text>
+                </Pressable>
+                    <Text style={styles.subHeader}>
+                        {welcomeAppTextSubHeader}
+                    </Text>
+                </View>
+        </View>
+        )
     );
 };
+
+const { height, width } = Dimensions.get('window');
+
 // Styles
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: COLORS.primary,
+        backgroundColor: "black",
     } as ViewStyle,
     content: {
+        marginLeft: 50,
+        marginRight: 50,
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: 20,
-        marginTop: 80,
+        marginTop: height* 0.22,
     } as ViewStyle,
     header: {
-        color: COLORS.white,
-        fontSize: SIZES.fontSize.header,
-        fontWeight: 'bold',
-        marginBottom: 30,
+        textAlign: "center",
+        color: "white",
+        fontSize: 30,
+        fontWeight: '400',
+        marginBottom: 5,
+    } as TextStyle,
+    subHeader: {
+        textAlign: "center",
+        color: "white",
+        fontSize: 18,
+        fontWeight: '200',
     } as TextStyle,
     image: {
         width: 300,
         height: 300,
         borderRadius: 150,
     } as ImageStyle,
-    form: {
-        marginTop: 40,
-        gap: 15,
-        width: '100%',
-        alignItems: 'center',
-    } as ViewStyle,
-    toggleText: {
-        color: COLORS.white,
-        marginTop: 10,
-    } as TextStyle,
-    toggleLink: {
-        color: COLORS.white,
-        textDecorationLine: 'underline',
-    } as TextStyle,
+    listContainer: {
+        flexDirection: "row",
+        width: width,
+        height: height* .24,
+        marginTop: height*.05
+    },
+    cityContainer: {
+        alignItems: "center",
+        width: width*.5,
+        height: height* 0.3,
+        marginRight: -10,
+        marginLeft: 10,
+    },
+    settingsIcons: {
+        width: width*.17,
+        height: width*.17,
+        tintColor: "white",
+    },
+    listElementCity: {
+        color: "white",
+        fontSize: 16,
+        fontWeight: "200",
+        marginTop: 15,
+        textAlign: "center",
+    },
+    pressableItemContainer: {
+        borderRadius: 5,
+        borderWidth: .5,
+        borderColor: "white",
+        justifyContent: "center",
+        height: height*.05,
+        width: width*.35,
+        marginTop: 20,
+        paddingLeft: 5,
+        paddingRight: 5,
+    },
+    pressableItemContainerPressed: {
+        borderRadius: 5,
+        borderWidth: .5,
+        borderColor: "grey",
+        justifyContent: "center",
+        height: height*.05,
+        width: width*.35,
+        marginTop: 20,
+        paddingLeft: 5,
+        paddingRight: 5,
+    },
+    pressableItemText: {
+        textAlign: "center",
+        color: "white",
+    },
+    methodContainer: {
+        alignItems: "center",
+        width: width*.5,
+        height: height* 0.3,
+    },
+    continueButton: {
+        borderRadius: 5,
+        borderWidth: .5,
+        borderColor: "white",
+        backgroundColor: "white",
+        justifyContent: "center",
+        height: height*.05,
+        width: width*.35,
+        marginBottom: 30,
+        paddingLeft: 5,
+        paddingRight: 5,
+    },
+    continueButtonPressed: {
+        borderRadius: 5,
+        borderWidth: .5,
+        backgroundColor: "grey",
+        justifyContent: "center",
+        height: height*.05,
+        width: width*.35,
+        marginBottom: 30,
+        paddingLeft: 5,
+        paddingRight: 5,
+    },
+    continueButtonText: {
+        textAlign: "center",
+        color: "black",
+    },
+    listElementMethod: {
+        color: "white",
+        fontSize: 16,
+        fontWeight: "200",
+        marginTop: 15,
+    },
 });
 
-export default AuthScreen;
+export default PrayerAppInitializationScreen;
