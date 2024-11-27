@@ -1,10 +1,12 @@
 import React, {useCallback, useState, useMemo} from 'react';
-import {Text, View, StyleSheet, Image, Pressable} from 'react-native';
+import {Text, View, StyleSheet, Image, Pressable, Dimensions} from 'react-native';
 import {useFocusEffect} from "@react-navigation/native";
 import DatabaseService from "@/database/database";
 import StatisticsDatePickerModal from "@/components/DatePicker/StatisticsDatePicker";
 import KazaPrayersModal from "@/components/KazaPrayers/KazaPrayersModal";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import {prayerStatisticProgressMessages, prayerJourneyStartMessage} from "@/constants/prayerStatisticProgressMessages"
+import {formattedDate} from "@/constants/formattedDate";
 
 const databaseService = new DatabaseService();
 
@@ -14,6 +16,13 @@ const PRAYER_TIMES = ['Morgen', 'Mittag', 'Nachmittag', 'Abend', 'Nacht'] as con
 interface PrayerStatistic {
     prayerTime: typeof PRAYER_TIMES[number];
     count: number;
+}
+
+// Funktion zum Abrufen der Nachricht basierend auf einem Prozentwert
+function getProgressMessage(percent: number): string {
+    const keys = Object.keys(prayerStatisticProgressMessages).map(Number).sort((a, b) => a - b);
+    const matchedKey = keys.reverse().find(key => percent >= key) || 0;
+    return prayerStatisticProgressMessages[matchedKey];
 }
 
 const getPrayerCounts = (prayedData: PrayerStatistic[]) => {
@@ -28,8 +37,8 @@ export default function PrayerStatistics(): JSX.Element {
     const [isLoading, setIsLoading] = useState(true);
     const [isStatisticModalVisible, setIsStatisticModalVisible] = useState<boolean>(false);
     const [isKazaPrayersModalVisible, setIsKazaPrayersModalVisible] = useState<boolean>(false);
-    const [fromDateString, setFromDateString] = useState<string>(new Date().toISOString().split('T')[0]);
-    const [toDateString, setToDateString] = useState<string>(new Date().toISOString().split('T')[0]);
+    const [fromDateString, setFromDateString] = useState<string>(formattedDate(new Date()));
+    const [toDateString, setToDateString] = useState<string>(formattedDate(new Date()));
 
 
     const [unprayedData, setUnprayedData] = useState<PrayerStatistic[]>([]);
@@ -55,12 +64,13 @@ export default function PrayerStatistics(): JSX.Element {
         }
     }, []);
 
+
     const initAndLoadLocalStorage = useCallback(async () => {
         const fromDateString = await AsyncStorage.getItem('FromDateString');
         const toDateString = await AsyncStorage.getItem('ToDateString');
 
-        setFromDateString(fromDateString ? fromDateString.split('T')[0] : new Date().toISOString().split('T')[0]);
-        setToDateString(toDateString ? toDateString.split('T')[0] : new Date().toISOString().split('T')[0]);
+        setFromDateString(fromDateString ? fromDateString.split('T')[0] : formattedDate(new Date()));
+        setToDateString(toDateString ? toDateString.split('T')[0] : formattedDate(new Date()));
     }, [])
 
 
@@ -109,8 +119,16 @@ export default function PrayerStatistics(): JSX.Element {
         return 290 * (value / maxTotalCount);
     }, [maxTotalCount]);
 
-    const prayerCounts = useMemo(() => getPrayerCounts(prayedData), [prayedData]);
-    
+    const aggregatedPrayerCounts  = useMemo(() => getPrayerCounts(prayedData), [prayedData]);
+
+    const totalPrayedPrayersCount = useMemo(() => {
+        const prayerValues = Object.values(aggregatedPrayerCounts);
+        return prayerValues.reduce((total, count) => total + count, 0);
+    }, [aggregatedPrayerCounts]);
+
+    const totalPrayerCountsForAllTimes  = useMemo(() => {
+        return maxTotalCount*5;
+    }, [maxTotalCount]);
 
     return (
         <View style={styles.container}>
@@ -118,7 +136,7 @@ export default function PrayerStatistics(): JSX.Element {
             {isKazaPrayersModalVisible && <KazaPrayersModal onClose={onKazaPrayersModalClose}
                                                             maxTotalCount={maxTotalCount}
                                                             onKazaPrayersModalClose={onKazaPrayersModalClose}
-                                                            prayerCounts={prayerCounts}
+                                                            prayerCounts={aggregatedPrayerCounts }
             />}
             <Text style={styles.containerHeader}>Gebete Statistik</Text>
             <View style={ styles.statisticFilterContainer}>
@@ -144,33 +162,33 @@ export default function PrayerStatistics(): JSX.Element {
                         <Text style={styles.chartYLineDescription}>N.</Text>
                     </View>
                     <View style={styles.chartYLine}></View>
-                    <View style={styles.chartYLinePrayerValue}>
-                        <View style={[styles.chartYLineMorningValue, { width: calculateProportionalBarWidth(prayerCounts['Morgen']) }]}>
-                            <Text style={styles.prayedDaysText}>{prayerCounts['Morgen']}</Text>
+                    <View style={styles.chartYLinePrayerValue}>prayedDaysIsNullText
+                        <View style={[styles.chartYLineMorningValue, { width: calculateProportionalBarWidth(aggregatedPrayerCounts['Morgen']) }]}>
+                            <Text style={aggregatedPrayerCounts['Morgen'] !== 0 ? styles.prayedDaysText : styles.prayedDaysIsNullText}>{aggregatedPrayerCounts ['Morgen']}</Text>
                             <View style={styles.chartYLineMorningTargetValue}>
                                 <Text style={styles.targetText}>{maxTotalCount}T</Text>
                             </View>
                         </View>
-                        <View style={[styles.chartYLineNoonValue, { width: calculateProportionalBarWidth(prayerCounts['Mittag']) }]}>
-                            <Text style={styles.prayedDaysText}>{prayerCounts['Mittag']}</Text>
+                        <View style={[styles.chartYLineNoonValue, { width: calculateProportionalBarWidth(aggregatedPrayerCounts['Mittag']) }]}>
+                            <Text style={aggregatedPrayerCounts['Mittag'] !== 0 ? styles.prayedDaysText : styles.prayedDaysIsNullText}>{aggregatedPrayerCounts ['Mittag']}</Text>
                             <View style={styles.chartYLineNoonTargetValue}>
                                 <Text style={styles.targetText}>{maxTotalCount}T</Text>
                             </View>
                         </View>
-                        <View style={[styles.chartYLineAfternoonValue, { width: calculateProportionalBarWidth(prayerCounts['Nachmittag']) }]}>
-                            <Text style={styles.prayedDaysText}>{prayerCounts['Nachmittag']}</Text>
+                        <View style={[styles.chartYLineAfternoonValue, { width: calculateProportionalBarWidth(aggregatedPrayerCounts['Nachmittag']) }]}>
+                            <Text style={aggregatedPrayerCounts['Nachmittag'] !== 0 ? styles.prayedDaysText : styles.prayedDaysIsNullText}>{aggregatedPrayerCounts ['Nachmittag']}</Text>
                             <View style={styles.chartYLineAfternoonTargetValue}>
                                 <Text style={styles.targetText}>{maxTotalCount}T</Text>
                             </View>
                         </View>
-                        <View style={[styles.chartYLineEveningValue, { width: calculateProportionalBarWidth(prayerCounts['Abend']) }]}>
-                            <Text style={styles.prayedDaysText}>{prayerCounts['Abend']}</Text>
+                        <View style={[styles.chartYLineEveningValue, { width: calculateProportionalBarWidth(aggregatedPrayerCounts['Abend']) }]}>
+                            <Text style={aggregatedPrayerCounts['Abend'] !== 0 ? styles.prayedDaysText : styles.prayedDaysIsNullText}>{aggregatedPrayerCounts ['Abend']}</Text>
                             <View style={styles.chartYLineEveningTargetValue}>
                                 <Text style={styles.targetText}>{maxTotalCount}T</Text>
                             </View>
                         </View>
-                        <View style={[styles.chartYLineNightValue, { width: calculateProportionalBarWidth(prayerCounts['Nacht']) }]}>
-                            <Text style={styles.prayedDaysText}>{prayerCounts['Nacht']}</Text>
+                        <View style={[styles.chartYLineNightValue, { width: calculateProportionalBarWidth(aggregatedPrayerCounts['Nacht']) }]}>
+                            <Text style={aggregatedPrayerCounts['Nacht'] !== 0 ? styles.prayedDaysText : styles.prayedDaysIsNullText}>{aggregatedPrayerCounts ['Nacht']}</Text>
                             <View style={styles.chartYLineNightTargetValue}>
                                 <Text style={styles.targetText}>{maxTotalCount}T</Text>
                             </View>
@@ -179,9 +197,13 @@ export default function PrayerStatistics(): JSX.Element {
                 </View>
                 <View style={styles.chartXLine}></View>
             </View>
-            <View style={{flexDirection: "row"}}>
-                <Text style={{ color: "white", fontSize: 7, marginTop: -200 }}>Daten: {JSON.stringify(unprayedData, null, 2)}</Text>
-                <Text style={{ color: "white", fontSize: 7, marginTop: -200 }}>Daten: {JSON.stringify(prayedData, null, 2)}</Text>
+            <View style={ styles.prayerProgressContainer }>
+                {/*<Text style={{ color: "white", fontSize: 7, marginTop: -200 }}>Daten: {JSON.stringify(unprayedData, null, 2)}</Text>*/}
+                {/*<Text style={{ color: "white", fontSize: 7, marginTop: -200 }}>Daten: {JSON.stringify(prayedData, null, 2)}</Text>*/}
+                <Text style={ styles.progressText }>{((totalPrayedPrayersCount/totalPrayerCountsForAllTimes)*100 === 0) ?
+                    `${prayerJourneyStartMessage}` :
+                    `Du hast ${Math.round((totalPrayedPrayersCount/totalPrayerCountsForAllTimes)*10000)/100}% deiner Gebete verrichtet!`}</Text>
+                <Text style={ styles.progressMessage }>{getProgressMessage((totalPrayedPrayersCount/totalPrayerCountsForAllTimes)*100)}</Text>
                 <Pressable
                     onPress={onKazaPrayersModalOpen}
                     style={({ pressed }) => [
@@ -196,6 +218,8 @@ export default function PrayerStatistics(): JSX.Element {
         </View>
     );
 }
+
+const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
     container: {
@@ -242,6 +266,24 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
+    prayerProgressContainer: {
+        flexDirection: "column",
+        height: height*0.32,
+        paddingLeft: 20,
+        paddingRight: 20,
+    },
+    progressText: {
+        color: "white",
+        fontSize: 22,
+        fontWeight: '400',
+    },
+    progressMessage: {
+        color: "white",
+        fontSize: 18,
+        fontWeight: "100",
+        marginTop: 5,
+        marginBottom: 13,
+    },
     kazaNamazBackground: {
         height: 50,
         width: 150,
@@ -273,7 +315,7 @@ const styles = StyleSheet.create({
     chartContainer: {
         marginTop: 30,
         padding: 0,
-        height: 500,
+        height: height*0.32,
         width: "100%",
     },
     chartYLineContainer: {
@@ -345,6 +387,17 @@ const styles = StyleSheet.create({
     },
     prayedDaysText: {
         position: 'absolute',
+        alignSelf: 'center',
+        color: 'white',
+        fontSize: 15,
+        fontWeight: '300',
+        textShadowColor: 'rgba(0, 0, 0, 0.75)',
+        textShadowOffset: { width: .5, height: .5 },
+        textShadowRadius: 3,
+    },
+    prayedDaysIsNullText: {
+        position: 'absolute',
+        left: 145,
         alignSelf: 'center',
         color: 'white',
         fontSize: 15,

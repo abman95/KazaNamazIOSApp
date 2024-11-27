@@ -12,6 +12,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import {formattedDate} from "@/constants/formattedDate";
 
 type StatisticsDatePickerModalProps = {
     onClose: () => void;
@@ -22,10 +23,6 @@ export default function StatisticsDatePickerModal({ onClose }: StatisticsDatePic
     const [internalToDate, setInternalToDate] = useState<Date>(new Date());
     const [showFromDatePicker, setShowFromDatePicker] = useState(Platform.OS === 'ios');
     const [showToDatePicker, setShowToDatePicker] = useState(Platform.OS === 'ios');
-
-    const dateConverter = useCallback((selectedDate: Date) => {
-        return selectedDate.toISOString().split('T')[0];
-    }, []);
 
     const saveFromDate = useCallback((_event: DateTimePickerEvent, selectedDate?: Date) => {
         const currentFromDate: Date = selectedDate || internalFromDate;
@@ -46,11 +43,11 @@ export default function StatisticsDatePickerModal({ onClose }: StatisticsDatePic
     }, [internalToDate]);
 
     const handlePressSaveDates = useCallback(async () => {
-        await AsyncStorage.setItem('FromDateString', internalFromDate.toISOString());
-        await AsyncStorage.setItem('ToDateString', internalToDate.toISOString());
-        alert(`Eingabe wurde gespeichert. ${dateConverter(internalFromDate)} bis ${dateConverter(internalToDate)}`);
+        await AsyncStorage.setItem('FromDateString', formattedDate(internalFromDate));
+        await AsyncStorage.setItem('ToDateString', formattedDate(internalToDate));
+        alert(`Eingabe wurde gespeichert. ${formattedDate(internalFromDate)} bis ${formattedDate(internalToDate)}`);
         onClose();
-    }, [internalFromDate, internalToDate, onClose, dateConverter]);
+    }, [internalFromDate, internalToDate, onClose, formattedDate]);
 
     useFocusEffect(
         useCallback(() => {
@@ -83,7 +80,7 @@ export default function StatisticsDatePickerModal({ onClose }: StatisticsDatePic
                 </View>
                 <View style={styles.contentContainer}>
                     <Text style={styles.pickedDateText}>
-                        {`Gewählter Zeitraum ${dateConverter(internalFromDate)} bis ${dateConverter(internalToDate)}`}
+                        {`Gewählter Zeitraum ${formattedDate(internalFromDate)} bis ${formattedDate(internalToDate)}`}
                     </Text>
 
                     <View style={styles.datePickerContainer}>

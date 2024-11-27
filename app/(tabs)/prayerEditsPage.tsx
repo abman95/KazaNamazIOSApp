@@ -5,6 +5,8 @@ import { DatePicker } from '@/components/DatePicker/DatePicker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import {EditPrayerTimesImages} from "@/components/PrayerTimes/EditPrayerTimes/EditPrayerTimesImages";
+import {formattedDate} from "@/constants/formattedDate";
+
 
 // Constants
 const PRAYER_TIMES = ['AlleGebete', 'Morgen', 'Mittag', 'Nachmittag', 'Abend', 'Nacht'] as const;
@@ -79,7 +81,7 @@ export default function PrayerEditsPage(): JSX.Element {
     const [prayerUpdate, setPrayerUpdate] = useState<PrayerUpdate>({ value: 0, timestamp: Date.now() });
     const [prayerTimes, setPrayerTimes] = useState<PrayerTimesType>(DEFAULT_PRAYER_TIMES);
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-    const [formattedSelectedDate, setFormattedSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+    const [formattedSelectedDate, setFormattedSelectedDate] = useState<string>(formattedDate(new Date()));
     const [selectedCountry, setSelectedCountry] = useState(DEFAULT_COUNTRY);
     const [selectedMethod, setSelectedMethod] = useState(DEFAULT_METHOD);
     const [isInitialized, setIsInitialized] = useState(false);
@@ -128,17 +130,10 @@ export default function PrayerEditsPage(): JSX.Element {
                 date: date
             });
 
-            const formattedDate = (date: Date): string => {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-
-                return `${year}-${month}-${day}`;
-            };
-
-            setFormattedSelectedDate(formattedDate(date));
+            const formattedDateString = formattedDate(date);
+            setFormattedSelectedDate(formattedDateString);
             const response = await fetch(
-                `${API_URL}/${formattedDate}?latitude=${selectedCountry.latitude}&longitude=${selectedCountry.longitude}&method=${selectedMethod.id}&timezonestring=Europe/Berlin`
+                `${API_URL}/${formattedDateString}?latitude=${selectedCountry.latitude}&longitude=${selectedCountry.longitude}&method=${selectedMethod.id}&timezonestring=Europe/Berlin`
             );
 
             if (!response.ok) {

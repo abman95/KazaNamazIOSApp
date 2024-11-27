@@ -4,6 +4,7 @@ import {useCallback, useState} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useFocusEffect} from "@react-navigation/native";
 import KazaPrayersModalChildComponent from "@/components/KazaPrayers/components/KazaPrayersModalChildComponent";
+import {formattedDate} from "@/constants/formattedDate";
 
 const PRAYER_TIMES = ['Morgen', 'Mittag', 'Nachmittag', 'Abend', 'Nacht'] as const;
 
@@ -21,21 +22,13 @@ type KazaNamazModalProps = {
     };
 };
 
-const formattedDate = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-
-    return `${year}-${month}-${day}`;
-};
-
 export default function KazaPrayersModal({ onClose, maxTotalCount, onKazaPrayersModalClose, prayerCounts}: KazaNamazModalProps) {
     const [internalFromDate, setInternalFromDate] = useState<Date>(new Date());
     const [internalToDate, setInternalToDate] = useState<Date>(new Date());
     const [isfollowUpPrayersButtonCallback, setIsfollowUpPrayersButtonCallback] = useState(false);
 
     const dateConverter = useCallback((selectedDate: Date) => {
-        return selectedDate.toISOString().split('T')[0];
+        return formattedDate(selectedDate);
     }, []);
 
     useFocusEffect(

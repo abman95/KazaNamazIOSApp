@@ -1,6 +1,7 @@
 import {Text, StyleSheet, View, Pressable, Dimensions} from "react-native";
 import {useCallback, useEffect, useState} from "react";
 import DatabaseService from "@/database/database";
+import {formattedDate} from "@/constants/formattedDate";
 
 const databaseService = new DatabaseService();
 
@@ -29,21 +30,14 @@ export default function KazaPrayersModalChildComponent({prayersTimeName,
         try {
             await databaseService.initializeDatabase();
 
-            const formatDate = (date: Date): string => {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            };
-
             let array: string[] = [];
             let currentDate = new Date(internalFromDate);
 
             while (array.length < count) {
                 await databaseService.initializeDatabase();
-                const formattedDate = formatDate(currentDate);
+                const formattedDateString = formattedDate(currentDate);
 
-                const result = await databaseService.addKazaNamazFilterPrayerNotDone(formattedDate, prayersTimeName, "erledigt");
+                const result = await databaseService.addKazaNamazFilterPrayerNotDone(formattedDateString, prayersTimeName, "erledigt");
 
                 if (result) {
                     array.push(result);

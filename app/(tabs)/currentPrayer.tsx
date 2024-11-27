@@ -3,11 +3,12 @@ import { Text, View, StyleSheet, ImageSourcePropType } from 'react-native';
 import CurrentPrayerTimes from "@/components/PrayerTimes/CurrentPrayerTimes";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useFocusEffect} from "@react-navigation/native";
+import {formattedDate} from "@/constants/formattedDate";
+
 
 // Type Definitions
 type PrayerTimeKey = 'morning' | 'noon' | 'afternoon' | 'evening' | 'night';
 type PrayerTimesType = Record<PrayerTimeKey, string>;
-type PrayerImagesType = Record<PrayerTimeKey, ImageSourcePropType>;
 
 interface PrayerInfo {
     name: string;
@@ -162,9 +163,9 @@ export default function PrayerEditsPage(): JSX.Element {
                 date: date
             });
 
-            const formattedDate = date.toISOString().split('T')[0];
+            const formattedDateString = formattedDate(date);
             const response = await fetch(
-                `${API_URL}/${formattedDate}?latitude=${selectedCountry.latitude}&longitude=${selectedCountry.longitude}&method=${selectedMethod.id}&timezonestring=Europe/Berlin`
+                `${API_URL}/${formattedDateString}?latitude=${selectedCountry.latitude}&longitude=${selectedCountry.longitude}&method=${selectedMethod.id}&timezonestring=Europe/Berlin`
             );
 
             if (!response.ok) {

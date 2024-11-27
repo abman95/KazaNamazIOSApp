@@ -13,11 +13,8 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { ImageSourcePropType } from 'react-native';
 import DatabaseService from "@/database/database";
-import {useFocusEffect} from "@react-navigation/native";
-import {string} from "prop-types";
 
 
-// Database instance
 const databaseService = new DatabaseService();
 
 
@@ -40,17 +37,11 @@ interface PrayerProps {
     currentTime: number;
 }
 
-// Konstanten
 type PrayerStatus = 'offen' | 'erledigt' | 'Abbrechen';
 
 const PRAYER_OPTIONS: PrayerStatus[] = ['offen', 'erledigt', 'Abbrechen'];
-const INITIAL_PRAYER_TIMES: PrayerTimes = {
-    remainingPrayerTime: '00:00:00',
-    currentPrayerTime: '00:00:00',
-    nextPrayerTime: '00:00:00',
-};
 
-// Helper Funktionen
+
 const formatTime = (hours: number, minutes: number): string => {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 };
@@ -92,6 +83,7 @@ const usePrayerStatus = () => {
                     setSelectedOption(newStatus);
 
                     // Format date to YYYY-MM-DD
+
                     const formattedDate = currentDate.toISOString().split('T')[0];
 
                     // Save to database

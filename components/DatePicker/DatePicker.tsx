@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import DateTimePicker from "@react-native-community/datetimepicker";
+import {formattedDate} from "@/constants/formattedDate";
 
 type DatePickerProps = {
     setDate: (date: Date) => void;
@@ -22,6 +23,8 @@ export function DatePicker({ setDate, selectedCountry }: DatePickerProps) {
         }
         setDateInternal(currentDate);
         setDate(currentDate);
+        alert(`Eingabe wurde gespeichert. ${formattedDate(currentDate)}`);
+
     };
 
 
