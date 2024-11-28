@@ -136,13 +136,11 @@ export default function PrayerEditsPage(): JSX.Element {
 
             if (countryJson) {
                 const parsedCountry = JSON.parse(countryJson);
-                console.log('Loaded country from storage:', parsedCountry);
                 setSelectedCountry(parsedCountry);
             }
 
             if (methodJson) {
                 const parsedMethod = JSON.parse(methodJson);
-                console.log('Loaded method from storage:', parsedMethod);
                 setSelectedMethod(parsedMethod);
             }
             setIsInitialized(true);

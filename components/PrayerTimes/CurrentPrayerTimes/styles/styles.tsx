@@ -11,11 +11,22 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     } as ViewStyle,
     containerHeader: {
+        paddingLeft: 55,
+        paddingRight: 25,
         textAlign: 'center',
         fontSize: 28,
         fontWeight: '400',
         color: 'white',
     } as TextStyle,
+    ezanVolumeButton: {
+        width: 30,
+        height: 30,
+    },
+    ezanVolumeImage: {
+        width: 30,
+        height: 30,
+        tintColor: "white",
+    },
     remainingPrayerTime: {
         marginTop: 5,
         color: 'white',

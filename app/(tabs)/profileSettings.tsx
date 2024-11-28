@@ -1,8 +1,14 @@
 import {Text, View, StyleSheet, Image, Pressable} from 'react-native';
-import { useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import CountryPicker from "@/components/settings/CountryPicker";
 import PrayerCalculationMethod from "@/components/settings/PrayerCalculationMethod";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
+import React from 'react';
+import {Switch} from 'react-native';
+import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
+import {resetEzan} from "@/components/ezan/ezan";
 
 const settingsIcons = {
     currentLocation: require('../../assets/images/currentLocation.png'),
@@ -26,6 +32,45 @@ export default function profileSettings(): JSX.Element {
         id: "0",
         name: "0",
     });
+    const [isEnabled, setIsEnabled] = useState(true);
+
+
+    const toggleSwitch = useCallback(() => {
+        const newValue = !isEnabled;
+        setIsEnabled(newValue);
+
+        const storeData = async () => {
+            try {
+                const jsonValue = JSON.stringify(newValue); // Boolean zu JSON-String
+                await AsyncStorage.setItem('isEnabled', jsonValue);
+                await AsyncStorage.setItem('isAudioIcon', "false");
+            } catch (e) {
+                console.error('Error saving isEnabled:', e);
+            }
+        };
+        void storeData();
+    }, [isEnabled]);
+
+    useEffect(() => {
+        if(!isEnabled) {
+            void resetEzan()
+        }
+    }, [isEnabled]);
+
+    useEffect(() => {
+        const loadInitialData = async () => {
+            try {
+                const jsonValue = await AsyncStorage.getItem('isEnabled');
+                if (jsonValue !== null) {
+                    const value = JSON.parse(jsonValue);
+                    setIsEnabled(value);
+                }
+            } catch (e) {
+                console.error('Error loading initial data:', e);
+            }
+        };
+        void loadInitialData();
+    }, []);
 
 
     useEffect(() => {
@@ -40,7 +85,7 @@ export default function profileSettings(): JSX.Element {
                 console.error('Error loading initial data:', e);
             }
         };
-         loadInitialData();
+         void loadInitialData();
     }, []);
 
     useEffect(() => {
@@ -55,7 +100,7 @@ export default function profileSettings(): JSX.Element {
                 console.error('Error loading initial data:', e);
             }
         };
-        loadInitialData();
+        void loadInitialData();
     }, []);
 
     useEffect(() => {
@@ -123,6 +168,17 @@ export default function profileSettings(): JSX.Element {
                 <View style={styles.listContainer}>
                     <Image style={ styles.settingsIcons } source={settingsIcons.prayerCall}/>
                     <Text style={ styles.listElement4 }>Ezan</Text>
+                    <SafeAreaProvider>
+                        <SafeAreaView style={styles.toggleContainer}>
+                            <Switch
+                                trackColor={{ false: '#4D4D4D', true: 'black' }} // Dunkelgrau für aus, tiefes Schwarz für an
+                                thumbColor={isEnabled ? '#FFFFFF' : '#9E9E9E'} // Weiß für an, Hellgrau für aus
+                                ios_backgroundColor="#1C1C1E" // Hintergrundfarbe für iOS im deaktivierten Zustand
+                                onValueChange={toggleSwitch}
+                                value={isEnabled}
+                            />
+                        </SafeAreaView>
+                    </SafeAreaProvider>
                 </View>
                 <View style={styles.listContainer}>
                     <Image style={ styles.settingsIcons } source={settingsIcons.prayerTimeMethod}/>
@@ -159,6 +215,12 @@ const styles = StyleSheet.create({
     },
     listMainContainer: {
         backgroundColor: "#201f1d",
+    },
+    toggleContainer: {
+        paddingRight: 40,
+        flex: 1.8/4,
+        alignItems: 'flex-end',
+        justifyContent: 'center',
     },
     listContainer: {
         width: "100%",
