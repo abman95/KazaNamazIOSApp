@@ -96,11 +96,10 @@ export const CurrentPrayer: React.FC<CurrentPrayerProps> = ({
      }, [isAudioIcon, isEnabled]);
 
     useEffect(() => {
-        if(Number(prayerTimes.remainingPrayerTime) < 1 && isEnabled) {
-            setIsAudioIcon(!isAudioIcon)
-            void playEzan();
+        if(prayerTimes.remainingPrayerTimeNumberSecs === 1 && isEnabled) {
+            void setAudioCallback();
         }
-    }, [prayerTimes.remainingPrayerTime, isEnabled]);
+    }, [prayerTimes.remainingPrayerTimeNumberSecs, isEnabled]);
 
    return ( <View style={styles.currentPrayerContainer}>
         <View style={{flexDirection: "row", alignItems: "center"}}>
@@ -109,7 +108,7 @@ export const CurrentPrayer: React.FC<CurrentPrayerProps> = ({
                 <Image source={isAudioIcon ? EZAN_ICONS.volume : EZAN_ICONS.mute} style={ styles.ezanVolumeImage }></Image>
             </Pressable>
         </View>
-        <Text style={styles.remainingPrayerTime}>{prayerTimes.remainingPrayerTime} verbleibend</Text>
+        <Text style={styles.remainingPrayerTime}>{prayerTimes.remainingPrayerTimeString} verbleibend</Text>
         <Image
             source={IMAGES[currentPrayerProps.currentPrayerName as keyof typeof IMAGES]}
             style={styles.prayersImage}

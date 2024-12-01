@@ -3,7 +3,8 @@ export type PrayerStatus = 'offen' | 'erledigt';
 export type PrayerOption = 'Abbrechen';
 
 export interface PrayerTimes {
-    remainingPrayerTime: string;
+    remainingPrayerTimeNumberSecs: number;
+    remainingPrayerTimeString: string;
     currentPrayerTime: string;
     nextPrayerTime: string;
 }

@@ -24,7 +24,8 @@ export const useTimeCalculation = (
         const { hours, minutes, secs } = calculateTimeComponents(timeRemaining);
 
         return {
-            remainingPrayerTime: `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`,
+            remainingPrayerTimeNumberSecs: timeRemaining,
+            remainingPrayerTimeString: `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`,
             currentPrayerTime: formatTime(Math.floor(currentPrayerTime / 3600), Math.floor((currentPrayerTime % 3600) / 60)),
             nextPrayerTime: formatTime(Math.floor(nextPrayerTime / 3600), Math.floor((nextPrayerTime % 3600) / 60)),
         };
