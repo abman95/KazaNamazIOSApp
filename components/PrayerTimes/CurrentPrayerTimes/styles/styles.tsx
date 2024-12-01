@@ -11,13 +11,21 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     } as ViewStyle,
     containerHeader: {
-        paddingLeft: 55,
+        paddingLeft: 25,
         paddingRight: 25,
         textAlign: 'center',
         fontSize: 28,
         fontWeight: '400',
         color: 'white',
     } as TextStyle,
+    qiblaCompassButton: {
+        width: 30,
+        height: 30,
+    },
+    qiblaCompassImage: {
+        width: 30,
+        height: 30,
+    },
     ezanVolumeButton: {
         width: 30,
         height: 30,

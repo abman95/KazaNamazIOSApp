@@ -61,7 +61,7 @@ export const PrayerAppInitializationScreen: () => void | React.JSX.Element = () 
                 missingSelections.push("Stadt");
             }
 
-            showAlert("Achtung", `Bitte wähle noch ${missingSelections.join(" & ")} aus.`);
+            showAlert("Achtung", `Bitte wähle noch eine ${missingSelections.join(" & ")} aus.`);
         }
     }, [selectedCountry, selectedMethod]);
 

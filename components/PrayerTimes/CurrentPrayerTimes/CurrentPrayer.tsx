@@ -4,6 +4,8 @@ import styles from '@/components/PrayerTimes/CurrentPrayerTimes/styles/styles';
 import { PrayerTimes } from '@/types/prayer.types';
 import {playEzan} from "@/components/ezan/ezan";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import CountryPicker from "@/components/settings/CountryPicker";
+import QiblaFinderModal from "@/components/QiblaFinder/QiblaFinderModal";
 
 const IMAGES = {
     Morgengebet: require('../../../assets/images/morgenGebet.jpg'),
@@ -28,6 +30,7 @@ interface CurrentPrayerProps {
 const ICONS = {
     edit: require('@/assets/images/edit1.png'),
     arrow: require('@/assets/images/arrow.png'),
+    qiblaCompass: require('@/assets/images/qiblaCompassIcon1.png'),
 }
 
 const EZAN_ICONS = {
@@ -44,7 +47,15 @@ export const CurrentPrayer: React.FC<CurrentPrayerProps> = ({
 
     const [isAudioIcon, setIsAudioIcon] = React.useState<boolean>(false);
     const [isEnabled, setIsEnabled] = useState(false);
-    useEffect(() => {
+    const [isModalVisible, setIsModalVisible] = useState<string>("");
+
+    const onModalButtonPress = useCallback((modalType: string): void => {
+        setIsModalVisible(modalType)
+    }, []);
+
+
+
+                useEffect(() => {
         const loadInitialData = async () => {
             try {
                 const jsonValue = await AsyncStorage.getItem('isEnabled');
@@ -101,32 +112,40 @@ export const CurrentPrayer: React.FC<CurrentPrayerProps> = ({
         }
     }, [prayerTimes.remainingPrayerTimeNumberSecs, isEnabled]);
 
-   return ( <View style={styles.currentPrayerContainer}>
-        <View style={{flexDirection: "row", alignItems: "center"}}>
-            <Text style={styles.containerHeader}>Aktuelle Gebetszeit:</Text>
-            <Pressable onPress={setAudioCallback} style={ styles.ezanVolumeButton}>
-                <Image source={isAudioIcon ? EZAN_ICONS.volume : EZAN_ICONS.mute} style={ styles.ezanVolumeImage }></Image>
-            </Pressable>
+   return (
+       <View style={styles.currentPrayerContainer}>
+           {isModalVisible === "qiblaCompass" && (
+               <QiblaFinderModal
+                   onClose={() => onModalButtonPress("")}
+               />
+           )}
+            <View style={{flexDirection: "row", alignItems: "center"}}>
+                <Pressable onPress={() => onModalButtonPress("qiblaCompass")} style={ styles.qiblaCompassButton}>
+                    <Image source={ICONS.qiblaCompass} style={ styles.qiblaCompassImage }></Image>
+                </Pressable>
+                <Text style={styles.containerHeader}>Aktuelle Gebetszeit:</Text>
+                <Pressable onPress={setAudioCallback} style={ styles.ezanVolumeButton}>
+                    <Image source={isAudioIcon ? EZAN_ICONS.volume : EZAN_ICONS.mute} style={ styles.ezanVolumeImage }></Image>
+                </Pressable>
+            </View>
+            <Text style={styles.remainingPrayerTime}>{prayerTimes.remainingPrayerTimeString} verbleibend</Text>
+            <Image
+                source={IMAGES[currentPrayerProps.currentPrayerName as keyof typeof IMAGES]}
+                style={styles.prayersImage}
+            />
+            <Text style={styles.prayersTimeText}>
+                {currentPrayerProps.currentPrayerName}: {prayerTimes.currentPrayerTime} Uhr
+            </Text>
+            <View style={styles.linearGradientContainer}>
+                <Text style={[styles.selectedOptionText, { color: 'white' }]}>{selectedOption}</Text>
+                <TouchableOpacity
+                    style={styles.optionSelector}
+                    onPress={() => showPicker(currentPrayerProps.currentDate, currentPrayerProps.currentPrayerName)}
+                >
+                    <Image style={styles.editImage} source={ICONS.edit} />
+                </TouchableOpacity>
+            </View>
+            <Image style={styles.arrowIcon} source={ICONS.arrow} />
         </View>
-        <Text style={styles.remainingPrayerTime}>{prayerTimes.remainingPrayerTimeString} verbleibend</Text>
-        <Image
-            source={IMAGES[currentPrayerProps.currentPrayerName as keyof typeof IMAGES]}
-            style={styles.prayersImage}
-        />
-        <Text style={styles.prayersTimeText}>
-            {currentPrayerProps.currentPrayerName}: {prayerTimes.currentPrayerTime} Uhr
-        </Text>
-        <View style={styles.linearGradientContainer}>
-            <Text style={[styles.selectedOptionText, { color: 'white' }]}>{selectedOption}</Text>
-            <TouchableOpacity
-                style={styles.optionSelector}
-                onPress={() => showPicker(currentPrayerProps.currentDate, currentPrayerProps.currentPrayerName)}
-            >
-                <Image style={styles.editImage} source={ICONS.edit} />
-            </TouchableOpacity>
-        </View>
-        <Image style={styles.arrowIcon} source={ICONS.arrow} />
-    </View>
-
    )
 };
