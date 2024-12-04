@@ -45,7 +45,6 @@ export default function StatisticsDatePickerModal({ onClose }: StatisticsDatePic
     const handlePressSaveDates = useCallback(async () => {
         await AsyncStorage.setItem('FromDateString', formattedDate(internalFromDate));
         await AsyncStorage.setItem('ToDateString', formattedDate(internalToDate));
-        alert(`Eingabe wurde gespeichert. ${formattedDate(internalFromDate)} bis ${formattedDate(internalToDate)}`);
         onClose();
     }, [internalFromDate, internalToDate, onClose, formattedDate]);
 
@@ -75,12 +74,12 @@ export default function StatisticsDatePickerModal({ onClose }: StatisticsDatePic
                 <View style={styles.titleContainer}>
                     <Text style={styles.title}>Wähle einen Zeitraum</Text>
                     <Pressable onPress={onClose}>
-                        <MaterialIcons style={styles.titleIcon} name="close" size={35} />
+                        <MaterialIcons style={styles.titleIcon} name="close" size={40} />
                     </Pressable>
                 </View>
                 <View style={styles.contentContainer}>
                     <Text style={styles.pickedDateText}>
-                        {`Gewählter Zeitraum ${formattedDate(internalFromDate)} bis ${formattedDate(internalToDate)}`}
+                        {`Gewählter Zeitraum\n${formattedDate(internalFromDate)} bis ${formattedDate(internalToDate)}`}
                     </Text>
 
                     <View style={styles.datePickerContainer}>
@@ -139,20 +138,18 @@ const styles = StyleSheet.create({
     modalContent: {
         flex: 1,
         borderColor: "white",
-        borderWidth: 1,
-        height: height * 0.4,
-        width: width,
+        borderWidth: .5,
+        height: height * 0.3,
+        width: width*0.8,
         backgroundColor: "black",
         borderRadius: 10,
         position: "absolute",
-        right: 0,
-        top: height * 0.3,
+        right: width*.1,
+        top: height * 0.159,
         flexDirection: "column",
     },
     titleContainer: {
-        flex: 3/8,
-        width: width * 0.99,
-        backgroundColor: "black",
+        flex: 2.5/8,
         borderTopRightRadius: 10,
         borderTopLeftRadius: 10,
         paddingHorizontal: 20,
@@ -162,27 +159,31 @@ const styles = StyleSheet.create({
     },
     title: {
         color: "white",
-        fontSize: 25,
+        fontSize: 23,
         marginBottom: 20,
         fontWeight: "700"
     },
     titleIcon: {
-        marginBottom: 20,
+        marginLeft: 12,
+        marginBottom: 15,
         color: "white",
     },
     contentContainer: {
-        gap: 13,
+        gap: 15,
         flex: 7/8,
         flexDirection: "column",
         paddingLeft: 10,
         paddingRight: 10,
     },
     pickedDateText: {
+        marginTop: -15,
         textAlign: "center",
         color: "white",
-        fontSize: 17,
+        fontSize: 14,
+        fontWeight: "300",
     },
     datePickerContainer: {
+        marginTop: 10,
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",

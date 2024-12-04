@@ -48,7 +48,7 @@ export default function QiblaFinderModal({onClose}: KiblaModalProps): React.JSX.
             rotationDifference -= 360;
         }
         setQiblaRotation(rotationDifference);
-    }, [magnetData, qiblaAngle]);
+    }, [magnetData, qiblaAngle, rotation]);
 
     const fetchQiblaDirection = useCallback(async() => {
         fetch(`${API_URL}/${selectedCountry.latitude}/${selectedCountry.longitude}`)
@@ -242,46 +242,46 @@ export default function QiblaFinderModal({onClose}: KiblaModalProps): React.JSX.
 
     return (
         <Modal animationType="fade" transparent={true}>
-        <View style={styles.container}>
-            <View style={{flexDirection: "row", marginTop: 70}}>
-            <Text style={styles.titleText}>Qibla-Kompass</Text>
-                <Pressable onPress={onClose}>
-                    <MaterialIcons style={styles.closeIcon} name="close" size={35}  />
-                </Pressable>
-            </View>
+            <View style={styles.container}>
+                <View style={{flexDirection: "row", marginTop: 70}}>
+                    <Text style={styles.titleText}>Qibla-Kompass</Text>
+                    <Pressable onPress={onClose}>
+                        <MaterialIcons style={styles.closeIcon} name="close" size={35}  />
+                    </Pressable>
+                </View>
 
                 <Image
                     source={require('../../assets/images/qiblaCompass2.png')}
                     style={[styles.kabaImage, { transform: [{ rotate: `${qiblaRotation}deg` }] }]}
                 />
 
-            <Text style={[styles.directionText, {
-                color: isInQiblaDirection ? 'green' : 'red'
-            }]}>
-                {isInQiblaDirection
-                    ? 'Zur Qibla ausgerichtet 🕌'
-                    : 'Richtung anpassen'}
-            </Text>
+                <Text style={[styles.directionText, {
+                    color: isInQiblaDirection ? 'green' : 'red'
+                }]}>
+                    {isInQiblaDirection
+                        ? 'Zur Qibla ausgerichtet 🕌'
+                        : 'Richtung anpassen'}
+                </Text>
 
-            <Text style={styles.rotationText}>
-                Stadt: {selectedCountry.name}
-            </Text>
-            <Text style={styles.rotationText}>
-                Koordinate: {`${selectedCountry.latitude} : ${selectedCountry.longitude}`}°
-            </Text>
-            <Text style={styles.rotationText}>
-                Gerät Rotationsgrad: {Math.round(calculateAzimuth(magnetData.x, magnetData.y))}°
-            </Text>
-            <Text style={styles.rotationText}>
-                Qibla-Winkel: {Math.round(qiblaAngle)}°
-            </Text>
-            <Text style={styles.rotationText}>
-                Gerät-Qibla Abweichungsgrad: {Math.round(calculateQiblaDeviation())}°
-            </Text>
+                <Text style={styles.rotationText}>
+                    Stadt: {selectedCountry.name}
+                </Text>
+                <Text style={styles.rotationText}>
+                    Koordinate: {`${selectedCountry.latitude} : ${selectedCountry.longitude}`}°
+                </Text>
+                <Text style={styles.rotationText}>
+                    Gerät Rotationsgrad: {Math.round(calculateAzimuth(magnetData.x, magnetData.y))}°
+                </Text>
+                <Text style={styles.rotationText}>
+                    Qibla-Winkel: {Math.round(qiblaAngle)}°
+                </Text>
+                <Text style={styles.rotationText}>
+                    Gerät-Qibla Abweichungsgrad: {Math.round(calculateQiblaDeviation())}°
+                </Text>
 
-            <View style={styles.buttonContainer}>
+                <View style={styles.buttonContainer}>
+                </View>
             </View>
-        </View>
         </Modal>
 
     );

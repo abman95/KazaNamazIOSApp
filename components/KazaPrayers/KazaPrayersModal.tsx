@@ -51,13 +51,13 @@ export default function KazaPrayersModal({ onClose, maxTotalCount, onKazaPrayers
         <Modal animationType="fade" transparent={true}>
             <View style={styles.modalContent}>
                 <View style={styles.titleContainer}>
-                    <Text style={styles.title}>Welche Gebete hast du nachgeholt?{maxTotalCount}</Text>
+                    <Text style={styles.title}>Welche Gebete hast du nachgeholt?</Text>
                     <Pressable onPress={onClose}>
                         <MaterialIcons style={styles.titleIcon} name="close" size={35}  />
                     </Pressable>
                 </View>
                 <View style={ styles.contentContainer }>
-                    <Text style={styles.pickedDateText}>{`Gewählter Zeitraum ${dateConverter(internalFromDate)} bis ${dateConverter(internalToDate)}`}</Text>
+                    <Text style={styles.pickedDateText}>{`Gewählter Zeitraum\n${dateConverter(internalFromDate)} bis ${dateConverter(internalToDate)}`}</Text>
                         {PRAYER_TIMES.map((prayer) => (
                             <KazaPrayersModalChildComponent
                                 key={`${prayer}}`}
@@ -94,31 +94,33 @@ const styles = StyleSheet.create({
         flex: 1,
         borderColor: "white",
         borderWidth: 1,
-        height: height*.61,
+        height: height*.6,
         width: width,
         backgroundColor: "black",
         borderRadius: 10,
         position: "absolute",
         right: 0,
-        top: height*.19,
+        top: height*.2,
         flexDirection: "column",
     },
     titleContainer: {
-        flex: 1.8/8,
         width: width*.99,
         backgroundColor: "black",
         borderTopRightRadius: 10,
         borderTopLeftRadius: 10,
         paddingHorizontal: 20,
         flexDirection: "row",
-        alignItems: "flex-end",
-        justifyContent: "space-between",
+        alignItems: "center",
+        justifyContent: "flex-end",
     },
     title: {
+        paddingTop: 10,
+        marginRight: width*.04,
+        textAlign: "center",
         color: "white",
         fontSize: 25,
         marginBottom: 20,
-        fontWeight: "700"
+        fontWeight: "400"
     },
     titleIcon: {
         marginBottom: 30,
@@ -132,9 +134,11 @@ const styles = StyleSheet.create({
         paddingRight: 10,
     },
     pickedDateText: {
+        marginTop: -15,
         textAlign: "center",
         color: "white",
-        fontSize: 17,
+        fontSize: 15,
+        fontWeight: "300"
     },
     kazaPrayersContainer: {
         borderRadius: 5,

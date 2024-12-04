@@ -4,7 +4,6 @@ import styles from '@/components/PrayerTimes/CurrentPrayerTimes/styles/styles';
 import { PrayerTimes } from '@/types/prayer.types';
 import {playEzan} from "@/components/ezan/ezan";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import CountryPicker from "@/components/settings/CountryPicker";
 import QiblaFinderModal from "@/components/QiblaFinder/QiblaFinderModal";
 
 const IMAGES = {
@@ -52,8 +51,6 @@ export const CurrentPrayer: React.FC<CurrentPrayerProps> = ({
     const onModalButtonPress = useCallback((modalType: string): void => {
         setIsModalVisible(modalType)
     }, []);
-
-
 
                 useEffect(() => {
         const loadInitialData = async () => {
