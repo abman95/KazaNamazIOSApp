@@ -47,7 +47,7 @@ export default function profileSettings(): JSX.Element {
         id: "0",
         name: "0",
     });
-    const [isEnabled, setIsEnabled] = useState(true);
+    const [isEnabled, setIsEnabled] = useState(false);
     const router = useRouter();
 
         const deleteAccountHandler = useCallback(() => {
@@ -59,7 +59,7 @@ export default function profileSettings(): JSX.Element {
                         text: OPTION,
                         onPress: async () => {
                             try {
-                                asyncStorageKeys.map(async (asyncStorageKey) => await AsyncStorage.removeItem(asyncStorageKey))
+                                await Promise.all(asyncStorageKeys.filter(Boolean).map(async (asyncStorageKey) => AsyncStorage.removeItem(asyncStorageKey)));
                                 await databaseService.initializeDatabase();
                                 await databaseService.deleteDatabase()
                                 router.replace('../.');
