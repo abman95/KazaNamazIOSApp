@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
         color: "white",
     },
     contentContainer: {
-        gap: 13,
+        gap: 14,
         flex: 7/8,
         flexDirection: "column",
         paddingLeft: 10,
@@ -163,7 +163,6 @@ const styles = StyleSheet.create({
         height: "100%",
         justifyContent: "flex-end",
         alignItems: "center",
-        gap: 0,
     },
     kazaPrayersCount: {
         width: width*0.078,

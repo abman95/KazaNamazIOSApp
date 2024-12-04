@@ -1,6 +1,5 @@
 import * as SQLite from 'expo-sqlite';
 import * as FileSystem from 'expo-file-system';
-import {Alert} from "react-native";
 
 interface KazaNamaz {
     id: number;
@@ -257,6 +256,18 @@ export default class DatabaseService {
                     status: foundPrayer ? foundPrayer.status : 'offen'
                 };
             });
+        } catch (error) {
+            console.error('Error getting prayer status:', error);
+            throw error;
+        }
+    }
+
+    async deleteDatabase(): Promise<void> {
+        if (!this.db) throw new Error('Database not initialized');
+        try {
+            await this.db.runAsync(
+                'DELETE FROM KazaNamaz'
+            );
         } catch (error) {
             console.error('Error getting prayer status:', error);
             throw error;

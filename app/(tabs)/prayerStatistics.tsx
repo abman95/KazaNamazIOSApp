@@ -66,8 +66,8 @@ export default function PrayerStatistics(): JSX.Element {
 
 
     const initAndLoadLocalStorage = useCallback(async () => {
-        const fromDateString = await AsyncStorage.getItem('FromDateString');
-        const toDateString = await AsyncStorage.getItem('ToDateString');
+        const fromDateString = await AsyncStorage.getItem('fromDateString');
+        const toDateString = await AsyncStorage.getItem('foDateString');
 
         setFromDateString(fromDateString ? fromDateString.split('T')[0] : formattedDate(new Date()));
         setToDateString(toDateString ? toDateString.split('T')[0] : formattedDate(new Date()));

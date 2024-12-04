@@ -43,8 +43,8 @@ export default function StatisticsDatePickerModal({ onClose }: StatisticsDatePic
     }, [internalToDate]);
 
     const handlePressSaveDates = useCallback(async () => {
-        await AsyncStorage.setItem('FromDateString', formattedDate(internalFromDate));
-        await AsyncStorage.setItem('ToDateString', formattedDate(internalToDate));
+        await AsyncStorage.setItem('fromDateString', formattedDate(internalFromDate));
+        await AsyncStorage.setItem('toDateString', formattedDate(internalToDate));
         onClose();
     }, [internalFromDate, internalToDate, onClose, formattedDate]);
 
@@ -52,8 +52,8 @@ export default function StatisticsDatePickerModal({ onClose }: StatisticsDatePic
         useCallback(() => {
             const loadData = async () => {
                 try {
-                    const fromDateString: string | null = await AsyncStorage.getItem('FromDateString');
-                    const toDateString: string | null = await AsyncStorage.getItem('ToDateString');
+                    const fromDateString: string | null = await AsyncStorage.getItem('romDateString');
+                    const toDateString: string | null = await AsyncStorage.getItem('toDateString');
 
                     setInternalFromDate(fromDateString ? new Date(fromDateString) : new Date());
                     setInternalToDate(toDateString ? new Date(toDateString) : new Date());

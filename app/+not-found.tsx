@@ -1,13 +1,20 @@
-import { View, StyleSheet } from "react-native";
-import { Link } from "expo-router";
+import { View, StyleSheet, Button} from "react-native";
+import { useNavigation } from '@react-navigation/native';
 
-export default function NotFoundScreen() {
-    return (
-        <View style={ styles.container }>
-            <Link href="/app/PrayerAppInitializationScreen" style={styles.button}>Go back to PrayerEditsPage screen!</Link>
-        </View>
-        )
+    export default function NotFoundScreen() {
+        const navigation = useNavigation();
+
+        return (
+            <View style={styles.container}>
+                <Button
+                    title="Go back to PrayerEditsPage screen!"
+                    onPress={() => navigation.navigate('index')}
+                    color="white"
+                />
+            </View>
+        );
     }
+
 
 const styles = StyleSheet.create({
     container: {

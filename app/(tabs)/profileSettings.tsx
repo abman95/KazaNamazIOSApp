@@ -1,14 +1,17 @@
-import {Text, View, StyleSheet, Image, Pressable} from 'react-native';
-import {useCallback, useEffect, useState} from 'react';
+import {Text, View, StyleSheet, Image, Pressable, Alert} from 'react-native';
+import { useCallback, useEffect, useState} from 'react';
 import CountryPicker from "@/components/settings/CountryPicker";
 import PrayerCalculationMethod from "@/components/settings/PrayerCalculationMethod";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
 import React from 'react';
 import {Switch} from 'react-native';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 import {resetEzan} from "@/components/ezan/ezan";
+import DatabaseService from "@/database/database";
+import {useRouter} from "expo-router";
+
+
+const databaseService = new DatabaseService();
 
 const settingsIcons = {
     currentLocation: require('../../assets/images/currentLocation.png'),
@@ -19,6 +22,18 @@ const settingsIcons = {
     logOut: require('../../assets/images/logOut.png'),
     deleteUser: require('../../assets/images/deleteUser.png')
 } as const;
+
+const OPTION: string = "Entfernen";
+const CANCEL_TEXT_VALUE: string = "Abbrechen";
+
+const asyncStorageKeys = [
+    'isEnabled',
+    'selectedCountry',
+    'selectedMethod',
+    'isAudioIcon',
+    'fromDateString',
+    'toDateString',
+];
 
 export default function profileSettings(): JSX.Element {
     const [isCountryModalVisible, setIsCountryModalVisible] = useState<boolean>(false);
@@ -33,7 +48,33 @@ export default function profileSettings(): JSX.Element {
         name: "0",
     });
     const [isEnabled, setIsEnabled] = useState(true);
+    const router = useRouter();
 
+        const deleteAccountHandler = useCallback(() => {
+            Alert.alert(
+                `Vorsicht!\nMöchten Sie wirklich Ihr Konto löschen?`,
+                '',
+                [
+                    {
+                        text: OPTION,
+                        onPress: async () => {
+                            try {
+                                asyncStorageKeys.map(async (asyncStorageKey) => await AsyncStorage.removeItem(asyncStorageKey))
+                                await databaseService.initializeDatabase();
+                                await databaseService.deleteDatabase()
+                                router.replace('../.');
+                            } catch (e) {
+                                console.error("Fehler beim Löschen der Account-Daten:", e);
+                            }
+                        }
+                    },
+                    {
+                        text: CANCEL_TEXT_VALUE,
+                        style: 'cancel'
+                    }
+                ]
+            );
+        }, []);
 
     const toggleSwitch = useCallback(() => {
         const newValue = !isEnabled;
@@ -187,13 +228,16 @@ export default function profileSettings(): JSX.Element {
                         <Text style={ styles.pressableItemText }>{selectedMethod.name}</Text>
                     </Pressable>
                 </View>
-                <View style={styles.listContainer}>
-                    <Image style={ styles.settingsIcons } source={settingsIcons.logOut}/>
-                    <Text style={ styles.listElement6 }>Abmelden</Text>
-                </View>
+                {/*<View style={styles.listContainer}>*/}
+                {/*    <Image style={ styles.settingsIcons } source={settingsIcons.logOut}/>*/}
+                {/*    <Text style={ styles.listElement6 }>Abmelden</Text>*/}
+                {/*</View>*/}
                 <View style={styles.listContainer}>
                     <Image style={ styles.settingsIcons } source={settingsIcons.deleteUser}/>
                     <Text style={ styles.listElement7 }>Konto entfernen</Text>
+                    <Pressable style={ styles.pressableItemContainer } onPress={deleteAccountHandler}>
+                        <Text style={ styles.pressableItemText }>entfernen</Text>
+                    </Pressable>
                 </View>
             </View>
         </View>
