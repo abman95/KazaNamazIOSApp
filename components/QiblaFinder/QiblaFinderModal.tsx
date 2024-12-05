@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import {Modal, StyleSheet, Text, View, Alert, Image, Animated, Pressable} from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {Modal, StyleSheet, Text, View, Alert, Image, Pressable} from 'react-native';
 import { Gyroscope, Magnetometer } from 'expo-sensors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Audio } from 'expo-av';
@@ -19,23 +19,22 @@ type KiblaModalProps = {
 };
 
 export default function QiblaFinderModal({onClose}: KiblaModalProps): React.JSX.Element {
-    const [gyroData, setGyroData] = useState({ x: 0, y: 0, z: 0 });
-    const [magnetData, setMagnetData] = useState({ x: 0, y: 0, z: 0 });
+    const [magnetData, setMagnetData] = useState<Record<string, number>>({ x: 0, y: 0, z: 0 });
     const [rotation, setRotation] = useState(0);
     const [qiblaAngle, setQiblaAngle] = useState(0);
     const [qiblaRotation, setQiblaRotation] = useState(0);
     const [gyroSubscription, setGyroSubscription] = useState<any>(null);
     const [magnetSubscription, setMagnetSubscription] = useState<any>(null);
     const [lastTimestamp, setLastTimestamp] = useState(Date.now());
-    const [initialOrientation, setInitialOrientation] = useState<number | null>(null);
     const [selectedCountry, setSelectedCountry] = useState<LocationData>({
         name: "0",
         latitude: "0",
         longitude: "0"
     });
     const [isInQiblaDirection, setIsInQiblaDirection] = useState(false);
-    const rotationAnimValue = useRef(new Animated.Value(0)).current;
     const [sound, setSound] = useState<Audio.Sound | null>(null);
+
+
 
     const QIBLA_TOLERANCE = 5;
 
@@ -49,6 +48,7 @@ export default function QiblaFinderModal({onClose}: KiblaModalProps): React.JSX.
         }
         setQiblaRotation(rotationDifference);
     }, [magnetData, qiblaAngle, rotation]);
+
 
     const fetchQiblaDirection = useCallback(async() => {
         fetch(`${API_URL}/${selectedCountry.latitude}/${selectedCountry.longitude}`)
@@ -148,15 +148,19 @@ export default function QiblaFinderModal({onClose}: KiblaModalProps): React.JSX.
         playQiblaSound();
     }, [isInQiblaDirection, sound]);
 
-    const checkQiblaDirection = (deviation: number) => {
-        const isNowInQiblaDirection = Math.abs(deviation) <= QIBLA_TOLERANCE;
+    const checkQiblaDirection = useCallback(() => {
+        const isNowInQiblaDirection =  Math.round(qiblaRotation) >= -QIBLA_TOLERANCE && Math.round(qiblaRotation) <= QIBLA_TOLERANCE;
 
         if (isNowInQiblaDirection !== isInQiblaDirection) {
             setIsInQiblaDirection(isNowInQiblaDirection);
         }
-    };
+    }, [qiblaRotation, isInQiblaDirection]);
 
-    const calculateAzimuth = (mx: number, my: number): number => {
+    useEffect(() => {
+        void checkQiblaDirection()
+    }, [qiblaRotation]);
+
+    const calculateAzimuth = useCallback((mx: number, my: number): number => {
         let azimuth = Math.atan2(-my, -mx) * 180 / Math.PI;
         azimuth = (azimuth + 360) % 360;
 
@@ -165,19 +169,7 @@ export default function QiblaFinderModal({onClose}: KiblaModalProps): React.JSX.
         azimuth = (azimuth + offsetCorrection + 360) % 360;
 
         return azimuth;
-    };
-
-    const calculateQiblaDeviation = () => {
-        const magnetAzimuth = calculateAzimuth(magnetData.x, magnetData.y);
-
-        let deviation = qiblaAngle - magnetAzimuth;
-
-        deviation = ((deviation + 180) % 360) - 180;
-
-        checkQiblaDirection(deviation);
-
-        return deviation;
-    };
+    }, []);
 
     const _subscribeGyroscope = useCallback(() => {
         if (gyroSubscription) return;
@@ -185,26 +177,22 @@ export default function QiblaFinderModal({onClose}: KiblaModalProps): React.JSX.
         const newSubscription = Gyroscope.addListener(gyroscopeData => {
             const currentTime = Date.now();
             const deltaTime = (currentTime - lastTimestamp) / 1000;
-            setLastTimestamp(currentTime);
 
-            setGyroData(gyroscopeData);
-
-            // Adjust rotation delta calculation
-            const rotationDelta = -gyroscopeData.z * deltaTime * 57.3;
+            const smoothingFactor = 0.1;
+            const rotationDelta = -gyroscopeData.z * deltaTime * 57.3 * smoothingFactor;
 
             setRotation(prevRotation => {
-                let newRotation = (prevRotation + rotationDelta + 360) % 360;
+                let smoothedRotation = prevRotation + rotationDelta;
+                smoothedRotation = (smoothedRotation + 360) % 360;
 
-                if (initialOrientation === null) {
-                    setInitialOrientation(newRotation);
-                }
-
-                return newRotation;
+                return smoothedRotation;
             });
+
+            setLastTimestamp(currentTime);
         });
 
         setGyroSubscription(newSubscription);
-    }, [gyroSubscription, lastTimestamp, initialOrientation]);
+    }, [gyroSubscription]);
 
     const _subscribeMagnetometer = useCallback(() => {
         if (magnetSubscription) return;
@@ -276,7 +264,7 @@ export default function QiblaFinderModal({onClose}: KiblaModalProps): React.JSX.
                     Qibla-Winkel: {Math.round(qiblaAngle)}°
                 </Text>
                 <Text style={styles.rotationText}>
-                    Gerät-Qibla Abweichungsgrad: {Math.round(calculateQiblaDeviation())}°
+                    Gerät-Qibla Abweichungsgrad: {Math.round(qiblaRotation)}°
                 </Text>
 
                 <View style={styles.buttonContainer}>

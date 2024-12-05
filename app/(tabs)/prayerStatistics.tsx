@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     },
     chartYLine: {
         height: 250,
-        width: 1,
+        width: .5,
         backgroundColor: 'white',
     },
     chartYLineDescriptionContainer: {
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
         fontSize: 15,
         height: 35,
         width: 45,
-        fontWeight: "300"
+        fontWeight: "300",
     },
     chartYLinePrayerValue: {
         display: "flex",
@@ -468,6 +468,6 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         height: 2,
         width: 300,
-        backgroundColor: 'white',
+        backgroundColor: 'black',
     }
 });

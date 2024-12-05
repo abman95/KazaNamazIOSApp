@@ -268,6 +268,7 @@ export default class DatabaseService {
             await this.db.runAsync(
                 'DELETE FROM KazaNamaz'
             );
+            console.log('Database successfully deleted!')
         } catch (error) {
             console.error('Error getting prayer status:', error);
             throw error;
