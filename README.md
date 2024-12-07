@@ -1,78 +1,68 @@
-# Kaza Namaz IOS App
+# KazaNamazApp – Eine Gebetszeit-Tracker und Kaza-Verwaltungs-App für Android & IOS
 
-## Beschreibung
+- **KazaNamazApp**: Eine React Native Expo Anwendung, die es Benutzern ermöglicht, ihre Gebetszeiten zu verfolgen, vergangene Gebete aufzuholen (Kaza) und Statistiken anzuzeigen. Mit einer benutzerfreundlichen Oberfläche bietet sie eine nahtlose Navigation und zahlreiche Funktionen rund um das Gebet.
+![KazaNamazReadMeIMG0.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG0.png)
+![KazaNamazReadMeIMG1.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG1.png)
+![KazaNamazReadMeIMG2.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG2.png)
+![KazaNamazReadMeIMG3.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG3.png)
+![KazaNamazReadMeIMG4.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG4.png)
+![KazaNamazReadMeIMG5.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG5.png)
+![KazaNamazReadMeIMG6.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG6.png)
+![KazaNamazReadMeIMG7.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG7.png)
+![KazaNamazReadMeIMG8.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG8.png)
+![KazaNamazReadMeIMG9.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG9.png)
+![KazaNamazReadMeIMG10.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG10.png)
 
-Die **Kaza Namaz IOS App** hilft Benutzern, ihre Gebetszeiten zu verfolgen und Gebete zu verwalten. Die App bietet eine benutzerfreundliche Oberfläche zur Anzeige vergangener und zukünftiger Gebete. Sie ermöglicht es den Benutzern, Gebete als abgeschlossen zu markieren und zeigt Gebetsstatistiken an. Außerdem informiert die App über die aktuellen Gebetszeiten und das nächste Gebet.
-
-## Funktionen
-
+## Hauptfunktionen
 - **Gebetsübersicht**:
-  - Zeigt vergangene Gebete an, wenn ein Datum in der Vergangenheit gewählt wird.
-  - Zeigt keine Gebete für zukünftige Daten an.
-  
-- **Gebetsbearbeitung**:
-  - Markiere einzelne Gebete als abgeschlossen oder nicht abgeschlossen.
-  - Setze alle Gebete auf einmal als abgeschlossen oder nicht abgeschlossen.
+    - Anzeige der Gebete für das aktuelle Datum.
+    - Vergangene Gebete können als verrichtet oder nicht verrichtet markiert werden.
+    - Automatische Deaktivierung von Einträgen für zukünftige Gebete, die noch nicht stattgefunden haben.
 
-- **Gebetsstatistiken**:
-  - Zeigt Gebetsdiagramme an (Design vorhanden, Funktionalität folgt in zukünftigen Versionen).
+- **Gebetsstatistik**:
+    - Anzeige von Gebetsstatistiken, einschließlich prozentualer Übersicht über verrichtete und nicht verrichtete Gebete.
+    - Fortschrittsdiagramme mit Motivationsnachrichten basierend auf den Gebetsdaten.
 
-- **Aktuelle Gebetsanzeige**:
-  - Zeigt die aktuelle Gebetszeit, die nächste Gebetszeit und die verbleibende Zeit bis zum nächsten Gebet.
-  - Das aktuelle Datum wird ebenfalls angezeigt.
+- **Gebetseinstellungen**:
+    - Auswahl der Stadt und der Berechnungsmethode für Gebetszeiten.
+    - Speicherung der Einstellungen mittels AsyncStorage zur Wiederverwendung beim nächsten App-Start.
 
-<<<<<<< HEAD
-# Welcome to your Expo app 👋
+- **Qibla Finder**:
+    - Ein Kompass, der die Richtung zur Qibla anzeigt, ist direkt über die aktuelle Gebetsseite zugänglich.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+- **Ezan-Wiedergabe**:
+    - Automatische oder manuelle Wiedergabe des Ezans (Gebetsruf) für die aktuelle Gebetszeit.
+    - Möglichkeit, die Ezan-Wiedergabe vollständig zu deaktivieren.
 
-## Get started
+## Weitere Features
+- **Löschen von Benutzerdaten**:
+    - Benutzer können ihr Konto und alle damit verbundenen Daten vollständig löschen.
+    - Die App leitet nach dem Löschen zurück zur Startseite.
 
-1. Install dependencies
+- **Benutzerfreundlichkeit**:
+    - Optimierungen für eine flüssige und intuitive Bedienung, z. B. durch zentrierte Listen, DatePicker-Kompatibilität für iOS und Android, sowie verbesserte Ladezeiten.
 
-   ```bash
-   npm install
-   ```
+- **Fehlerbehebungen**:
+    - Korrektur von Berechnungsproblemen wie Division durch Null bei Statistiken.
+    - Lokale Zeitzonenunterstützung für Gebetszeiten und Datenbankeinträge.
 
-2. Start the app
+## Installation und Start
+1. **Abhängigkeiten installieren**:
+    - Stelle sicher, dass Node.js installiert ist, und führe dann den folgenden Befehl aus:
+      `npm install`
 
-   ```bash
-    npx expo start
-   ```
+2. **Die App starten**:
+    - Starte die Anwendung mit Expo:
+      `npx expo start`
 
-In the output, you'll find options to open the app in a
+3. **Die App testen**:
+    - Öffne die App mit:
+        - einem Android-Emulator
+        - einem iOS-Simulator
+        - der Expo Go App
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-=======
-# KazaNamazIOSApp
-KazaNamazIOSApp
->>>>>>> c78604b3a47e3e9102e636befd4fb3ba08fde2ac
+## Technologie-Stack
+- **Framework**: React Native mit Expo
+- **Datenbank**: SQLite für lokale Datenspeicherung
+- **State Management**: Context API
+- **Storage**: AsyncStorage für persistente Einstellungen
