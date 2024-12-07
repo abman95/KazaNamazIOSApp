@@ -46,15 +46,16 @@ export default function RootLayout() {
                         name="index"
                         options={{ headerShown: false }}
                         redirect={true}
-                        href="/currentPrayer"
                     />
                 ) : (
                     <Stack.Screen
                         name="index"
                         options={{ headerShown: false }}
+                        redirect={false}
                     />
                 )}
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="index1" options={{ headerShown: false }} />
                 <Stack.Screen
                     name="+not-found"
                     options={{

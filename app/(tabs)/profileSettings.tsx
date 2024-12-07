@@ -62,7 +62,7 @@ export default function profileSettings(): JSX.Element {
                                 await Promise.all(asyncStorageKeys.filter(Boolean).map(async (asyncStorageKey) => AsyncStorage.removeItem(asyncStorageKey)));
                                 await databaseService.initializeDatabase();
                                 await databaseService.deleteDatabase()
-                                router.replace('../.');
+                                router.replace('/index1');
                             } catch (e) {
                                 console.error("Fehler beim Löschen der Account-Daten:", e);
                             }

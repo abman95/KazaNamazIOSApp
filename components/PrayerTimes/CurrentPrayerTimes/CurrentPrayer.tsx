@@ -52,7 +52,7 @@ export const CurrentPrayer: React.FC<CurrentPrayerProps> = ({
         setIsModalVisible(modalType)
     }, []);
 
-                useEffect(() => {
+    useEffect(() => {
         const loadInitialData = async () => {
             try {
                 const jsonValue = await AsyncStorage.getItem('isEnabled');

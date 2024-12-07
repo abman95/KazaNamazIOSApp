@@ -23,7 +23,7 @@ const settingsIcons = {
 } as const;
 
 
-const showAlert = (title: string, message: string) => {
+const showAlert: (title: string, message: string) => void = (title: string, message: string) => {
     Alert.alert(
         title,
         message,
@@ -34,7 +34,7 @@ const showAlert = (title: string, message: string) => {
     );
 };
 
-export const PrayerAppInitializationScreen: () => void | React.JSX.Element = () => {
+const PrayerAppInitializationScreen = (): React.JSX.Element => {
     const router = useRouter();
     const [isModalVisible, setIsModalVisible] = useState<string>("");
     const [selectedCountry, setSelectedCountry] = useState<Record<string, string>>({
@@ -48,11 +48,11 @@ export const PrayerAppInitializationScreen: () => void | React.JSX.Element = () 
     });
     const [isSelection, setIsSelection] = useState<boolean>(false);
 
-    const handleContinue = useCallback(() => {
+    const handleContinue: () => void = useCallback(() => {
         if (selectedCountry.name !== "0" && selectedMethod.name !== "0") {
             setIsSelection(true)
         } else {
-            let missingSelections = [];
+            let missingSelections: string[] = [];
 
             if (selectedMethod.name === "0") {
                 missingSelections.push("Methode");
@@ -70,7 +70,7 @@ export const PrayerAppInitializationScreen: () => void | React.JSX.Element = () 
             try {
                 const jsonValue = await AsyncStorage.getItem('selectedCountry');
                 if (jsonValue !== null) {
-                    const value = JSON.parse(jsonValue);
+                    const value: Record<string, string> = JSON.parse(jsonValue);
                     setSelectedCountry(value);
                 }
             } catch (e) {
@@ -85,7 +85,7 @@ export const PrayerAppInitializationScreen: () => void | React.JSX.Element = () 
             try {
                 const jsonValue = await AsyncStorage.getItem('selectedMethod');
                 if (jsonValue !== null) {
-                    const value = JSON.parse(jsonValue);
+                    const value: Record<string, string> = JSON.parse(jsonValue);
                     setSelectedMethod(value);
                 }
             } catch (e) {
@@ -96,9 +96,9 @@ export const PrayerAppInitializationScreen: () => void | React.JSX.Element = () 
     }, []);
 
     useEffect(() => {
-        const storeData = async () => {
+        const storeData: () => Promise<void>  = async () => {
             try {
-                const jsonValue = JSON.stringify(selectedCountry);
+                const jsonValue: string = JSON.stringify(selectedCountry);
                 await AsyncStorage.setItem('selectedCountry', jsonValue);
             } catch (e) {
                 console.error('Error saving selectedCountry:', e);
@@ -108,9 +108,9 @@ export const PrayerAppInitializationScreen: () => void | React.JSX.Element = () 
     }, [selectedCountry]);
 
     useEffect(() => {
-        const storeData = async () => {
+        const storeData: () => Promise<void> = async () => {
             try {
-                const jsonValue = JSON.stringify(selectedMethod);
+                const jsonValue: string = JSON.stringify(selectedMethod);
                 await AsyncStorage.setItem('selectedMethod', jsonValue);
             } catch (e) {
                 console.error('Error saving selectedMethod:', e);
@@ -123,66 +123,84 @@ export const PrayerAppInitializationScreen: () => void | React.JSX.Element = () 
         setIsModalVisible(modalType)
     }, []);
 
+    useEffect(() => {
+        if (selectedCountry.name !== "0" && selectedMethod.name !== "0" && isSelection) {
+            router.replace('/currentPrayer');
+        }
+    }, [selectedCountry, selectedMethod, isSelection]);
+
+
     return (
-        selectedCountry.name !== "0" && selectedMethod.name !== "0" &&  isSelection ? (
-            router.replace('/currentPrayer')
-            ) : (
         <View style={styles.container}>
-            {isModalVisible === "city" && (
-                <CountryPicker
-                    onClose={() => onModalButtonPress("")}
-                    setSelectedCountry={setSelectedCountry}
-                />
-            )}
-
-            {isModalVisible === "method" && (
-                <PrayerCalculationMethod
-                    onClose={() => onModalButtonPress("")}
-                    setSelectedMethod={setSelectedMethod}
-                />
-            )}
             <View style={styles.content}>
-                    <Text style={styles.header}>
-                        {welcomeAppTextHeader}
-                    </Text>
+                {isModalVisible === "city" && (
+                    <CountryPicker
+                        onClose={() => onModalButtonPress("")}
+                        setSelectedCountry={setSelectedCountry}
+                    />
+                )}
 
-                <View style={ styles.listContainer }>
+                {isModalVisible === "method" && (
+                    <PrayerCalculationMethod
+                        onClose={() => onModalButtonPress("")}
+                        setSelectedMethod={setSelectedMethod}
+                    />
+                )}
+
+                <Text style={styles.header}>{welcomeAppTextHeader}</Text>
+
+                <View style={styles.listContainer}>
                     <View style={styles.cityContainer}>
-                        <Image style={ styles.settingsIcons } source={settingsIcons.currentLocation}/>
-                        <Text style={ styles.listElementCity }>Gewählter Standort</Text>
-                        <Pressable style={({ pressed }) => [
-                            pressed ? styles.pressableItemContainerPressed
-                                : styles.pressableItemContainer
-                        ]}
-                                   onPress={() => onModalButtonPress("city")}>
-                            <Text style={ styles.pressableItemText }>{selectedCountry.name === "0" ? "Wähle eine Stadt aus" : selectedCountry.name}</Text>
+                        <Image style={styles.settingsIcons} source={settingsIcons.currentLocation} />
+                        <Text style={styles.listElementCity}>Gewählter Standort</Text>
+                        <Pressable
+                            style={({ pressed }) =>
+                                pressed
+                                    ? styles.pressableItemContainerPressed
+                                    : styles.pressableItemContainer
+                            }
+                            onPress={() => onModalButtonPress("city")}
+                        >
+                            <Text style={styles.pressableItemText}>
+                                {selectedCountry.name === "0"
+                                    ? "Wähle eine Stadt aus"
+                                    : selectedCountry.name}
+                            </Text>
                         </Pressable>
                     </View>
+
                     <View style={styles.methodContainer}>
-                        <Image style={ styles.settingsIcons } source={settingsIcons.prayerTimeMethod}/>
-                        <Text style={ styles.listElementMethod }>Gewählte Methode</Text>
-                        <Pressable style={({ pressed }) => [
-                            pressed ? styles.pressableItemContainerPressed
-                                : styles.pressableItemContainer
-                        ]}
-                                   onPress={() => onModalButtonPress("method")}>
-                            <Text style={ styles.pressableItemText }>{selectedMethod.name === "0" ? "Wähle eine Methode aus" : selectedMethod.name}</Text>
+                        <Image style={styles.settingsIcons} source={settingsIcons.prayerTimeMethod} />
+                        <Text style={styles.listElementMethod}>Gewählte Methode</Text>
+                        <Pressable
+                            style={({ pressed }) =>
+                                pressed
+                                    ? styles.pressableItemContainerPressed
+                                    : styles.pressableItemContainer
+                            }
+                            onPress={() => onModalButtonPress("method")}
+                        >
+                            <Text style={styles.pressableItemText}>
+                                {selectedMethod.name === "0"
+                                    ? "Wähle eine Methode aus"
+                                    : selectedMethod.name}
+                            </Text>
                         </Pressable>
                     </View>
                 </View>
-                <Pressable style={({ pressed }) => [
-                    pressed ? styles.continueButtonPressed
-                        : styles.continueButton
-                ]}
-                           onPress={() => {void handleContinue()}}>
-                    <Text style={ styles.continueButtonText }>Fortfahren</Text>
+
+                <Pressable
+                    style={({ pressed }) =>
+                        pressed ? styles.continueButtonPressed : styles.continueButton
+                    }
+                    onPress={handleContinue}
+                >
+                    <Text style={styles.continueButtonText}>Fortfahren</Text>
                 </Pressable>
-                    <Text style={styles.subHeader}>
-                        {welcomeAppTextSubHeader}
-                    </Text>
-                </View>
+
+                <Text style={styles.subHeader}>{welcomeAppTextSubHeader}</Text>
+            </View>
         </View>
-        )
     );
 };
 

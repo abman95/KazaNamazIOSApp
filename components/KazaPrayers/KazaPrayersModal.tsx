@@ -34,8 +34,8 @@ export default function KazaPrayersModal({ onClose, maxTotalCount, onKazaPrayers
     useFocusEffect(
         useCallback(() => {
             const loadData = async () => {
-                const fromDateString: string = await AsyncStorage.getItem('FromDateString') || formattedDate(new Date());
-                const toDateString: string = await AsyncStorage.getItem('ToDateString') || formattedDate(new Date());
+                const fromDateString: string = await AsyncStorage.getItem('fromDateString') || formattedDate(new Date());
+                const toDateString: string = await AsyncStorage.getItem('toDateString') || formattedDate(new Date());
 
                 setInternalFromDate(new Date(fromDateString));
                 setInternalToDate(new Date(toDateString));

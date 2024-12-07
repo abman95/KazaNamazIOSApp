@@ -52,7 +52,7 @@ export default function StatisticsDatePickerModal({ onClose }: StatisticsDatePic
         useCallback(() => {
             const loadData = async () => {
                 try {
-                    const fromDateString: string | null = await AsyncStorage.getItem('romDateString');
+                    const fromDateString: string | null = await AsyncStorage.getItem('fromDateString');
                     const toDateString: string | null = await AsyncStorage.getItem('toDateString');
 
                     setInternalFromDate(fromDateString ? new Date(fromDateString) : new Date());
