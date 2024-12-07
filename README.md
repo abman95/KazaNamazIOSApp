@@ -1,17 +1,9 @@
 # KazaNamazApp – Eine Gebetszeit-Tracker und Kaza-Verwaltungs-App für Android & IOS
+![KazaNamazReadMeIMG1Bundled.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG1Bundled.png)
+![KazaNamazReadMeIMG2Bundled.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG2Bundled.png)
+![KazaNamazReadMeIMG3Bundled.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG3Bundled.png)
 
 - **KazaNamazApp**: Eine React Native Expo Anwendung, die es Benutzern ermöglicht, ihre Gebetszeiten zu verfolgen, vergangene Gebete aufzuholen (Kaza) und Statistiken anzuzeigen. Mit einer benutzerfreundlichen Oberfläche bietet sie eine nahtlose Navigation und zahlreiche Funktionen rund um das Gebet.
-![KazaNamazReadMeIMG0.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG0.png)
-![KazaNamazReadMeIMG1.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG1.png)
-![KazaNamazReadMeIMG2.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG2.png)
-![KazaNamazReadMeIMG3.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG3.png)
-![KazaNamazReadMeIMG4.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG4.png)
-![KazaNamazReadMeIMG5.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG5.png)
-![KazaNamazReadMeIMG6.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG6.png)
-![KazaNamazReadMeIMG7.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG7.png)
-![KazaNamazReadMeIMG8.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG8.png)
-![KazaNamazReadMeIMG9.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG9.png)
-![KazaNamazReadMeIMG10.png](assets%2Fimages%2FKazaNamazReadMeIMG%2FKazaNamazReadMeIMG10.png)
 
 ## Hauptfunktionen
 - **Gebetsübersicht**:
